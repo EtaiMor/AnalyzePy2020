@@ -1,8 +1,9 @@
 from pyqtgraph.dockarea import Dock
 from GateDocView import GateDocView
-from AscanView import AScanView
+# from Pkgs.Ascan.AscanView import AScanView
 from CscanView import CScanView
-
+import os
+import importlib
 
 class GateView(Dock):
     def __init__(self, parent, gate_docview :GateDocView):
@@ -11,9 +12,17 @@ class GateView(Dock):
         self.gate_docview = gate_docview
         self.ascan_view = None
         self.cscan_view = None
+        self.child_views = list()
+        for pkg_dir in os.listdir('./Pkgs/'):
+            module_name = 'Pkgs.{0}.{1}View'.format(pkg_dir, pkg_dir)
+            class_name = '{0}View'.format(pkg_dir)
+            module = importlib.import_module(module_name)
+            klass = getattr(module, class_name)
+            self.child_views.append(klass.init_instance(self, gate_docview))
 
-        self.open_ascanview()
-        self.open_cscanview()
+
+        # self.open_ascanview()
+        # self.open_cscanview()
         # self.cscan_dock = None
         # self.bscan_dock = None
         # self.ascan_dock = None

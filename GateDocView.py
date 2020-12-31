@@ -3,7 +3,7 @@ from pyqtgraph.parametertree import Parameter, ParameterTree, ParameterItem, reg
 from pyqtgraph.parametertree import types as pTypes
 
 from HdfDoc import HdfDoc
-from AscanDocView import AscanDocView
+from Pkgs.Ascan.AscanDocView import AscanDocView
 from BscanDocView import BscanDocView
 from CscanDocView import CscanDocView
 
