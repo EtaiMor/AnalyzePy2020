@@ -1,10 +1,8 @@
 import numpy as np
-from pyqtgraph.parametertree import Parameter, ParameterTree, ParameterItem, registerParameterType
 from pyqtgraph.parametertree import types as pTypes
 
 from HdfDoc import HdfDoc
-from Pkgs.Ascan.AscanDocView import AscanDocView
-from BscanDocView import BscanDocView
+from Pkgs.GateViewPkgs.Ascan.AscanDocView import AscanDocView
 from CscanDocView import CscanDocView
 
 

@@ -1,9 +1,8 @@
 import pyqtgraph as pg
 from pyqtgraph.dockarea import Dock
-from Pkgs.Ascan.AscanDocView import AscanDocView
+from Pkgs.GateViewPkgs.Ascan.AscanDocView import AscanDocView
 from GateDocView import GateDocView
 from MainView import MainView
-import numpy as np
 
 
 class AscanView(Dock):

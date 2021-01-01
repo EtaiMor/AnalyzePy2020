@@ -13,14 +13,8 @@ class GateView(Dock):
         self.ascan_view = None
         self.cscan_view = None
         self.child_views = list()
-        for pkg_dir in os.listdir('./Pkgs/'):
-            module_name = 'Pkgs.{0}.{1}View'.format(pkg_dir, pkg_dir)
-            class_name = '{0}View'.format(pkg_dir)
-            module = importlib.import_module(module_name)
-            klass = getattr(module, class_name)
-            self.child_views.append(klass.init_instance(self, gate_docview))
 
-
+        self.load_gateview_pkgs()
         # self.open_ascanview()
         # self.open_cscanview()
         # self.cscan_dock = None
@@ -31,6 +25,13 @@ class GateView(Dock):
         # self.open_ascanview()
 
         # self.data_view.sigTreeStateChanged.connect(self.data_view_changed)
+    def load_gateview_pkgs(self):
+        for pkg_dir in os.listdir('./Pkgs/GateViewPkgs/'):
+            module_name = 'Pkgs.GateViewPkgs.{0}.{1}View'.format(pkg_dir, pkg_dir)
+            class_name = '{0}View'.format(pkg_dir)
+            module = importlib.import_module(module_name)
+            klass = getattr(module, class_name)
+            self.child_views.append(klass.init_instance(self, self.gate_docview))
 
     def open_cscanview(self):
         cscan_docview = self.gate_docview.open_cscan()
