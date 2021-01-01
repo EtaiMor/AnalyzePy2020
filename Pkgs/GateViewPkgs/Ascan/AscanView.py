@@ -3,11 +3,13 @@ from pyqtgraph.dockarea import Dock
 from Pkgs.GateViewPkgs.Ascan.AscanDocView import AscanDocView
 from GateDocView import GateDocView
 from MainView import MainView
+from GateView import GateView
 
 
 class AscanView(Dock):
     @staticmethod
-    def init_instance(parent_view, gate_docview: GateDocView):
+    def init_instance(parent_view:GateView):
+        gate_docview : GateDocView = parent_view.gate_docview
         i_pos = int(gate_docview.getValues()[GateDocView.I_POS_STR][0])
         j_pos = int(gate_docview.getValues()[GateDocView.J_POS_STR][0])
         a_scan = gate_docview.hdf_doc.get_a_scan(i_pos, j_pos)

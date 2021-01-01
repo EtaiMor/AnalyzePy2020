@@ -31,7 +31,7 @@ class GateView(Dock):
             class_name = '{0}View'.format(pkg_dir)
             module = importlib.import_module(module_name)
             klass = getattr(module, class_name)
-            self.child_views.append(klass.init_instance(self, self.gate_docview))
+            self.child_views.append(klass.init_instance(self))
 
     def open_cscanview(self):
         cscan_docview = self.gate_docview.open_cscan()
