@@ -13,7 +13,7 @@ class AscanView(Dock):
         i_pos = int(gate_docview.getValues()[GateDocView.I_POS_STR][0])
         j_pos = int(gate_docview.getValues()[GateDocView.J_POS_STR][0])
         a_scan = gate_docview.hdf_doc.get_a_scan(i_pos, j_pos)
-        ascan_docview = AscanDocView(gate_docview, 'A-Scan', gate_docview.hdf_doc, a_scan)
+        ascan_docview = AscanDocView(gate_docview, 'A-Scan', a_scan)
         view = AscanView(parent_view, ascan_docview)
         return view
 
