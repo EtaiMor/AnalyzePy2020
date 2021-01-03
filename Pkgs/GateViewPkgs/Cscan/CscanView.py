@@ -26,7 +26,7 @@ class CscanView(Dock):
         image_item.attach_mouseClickEvent(self.mouseClickEvent)
         self.image_view = pg.ImageView(self, cscan_docview.name(), imageItem=image_item)
         self.addWidget(self.image_view)
-        self.main_view.dock_area.addDock(self, position='right', relativeTo=self.main_view.tree_dock)
+        self.main_view.dock_area.addDock(self, position='right')
         cscan_docview.slots.append(self.cscanChangedEvent)
         # self.cscan_docview.slots.append(self.cscanChangedEvent)
 
