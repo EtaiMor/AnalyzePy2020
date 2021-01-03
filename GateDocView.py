@@ -57,13 +57,17 @@ class GateDocView(pTypes.GroupParameter):
         child.sigValueChanged.connect(slot)
 
 
-    def update_ij_pos(self, i_indx, j_indx):
+    def update_ij_pos(self, i_indx = None, j_indx=None):
         ipos_param: pTypes.Parameter = self.get_ipos_param()
-        ipos_param.setValue(i_indx)
+        if i_indx is not None:
+            ipos_param.setValue(i_indx)
+
         jpos_param: pTypes.Parameter = self.get_jpos_param()
-        jpos_param.setValue(j_indx)
+        if j_indx is not None:
+            jpos_param.setValue(j_indx)
+
         for fun in self.ij_change_event_slots:
-            fun(i_indx, j_indx)
+            fun(ipos_param.value(), jpos_param.value())
 
 
 
@@ -74,8 +78,8 @@ class GateDocView(pTypes.GroupParameter):
             fun(row, col)
 
     def col_value_changed(self, changeDesc, col):
-        jpos_param: pTypes.Parameter = self.get_ipos_param()
-        row = jpos_param.value()
+        ipos_param: pTypes.Parameter = self.get_ipos_param()
+        row = ipos_param.value()
         for fun in self.ij_change_event_slots:
             fun(row, col)
 

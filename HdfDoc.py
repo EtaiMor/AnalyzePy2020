@@ -133,7 +133,11 @@ class HdfDoc:
         (num_wave, wave_len) = self.a_scan_mat.shape
         return (num_wave, self.num_row, self.num_col, wave_len)
 
-    def get_volume_ascans(self, ascan_mat, dn0=0, dn1=None):
+
+    def get_volume_ascans(self, ascan_mat = None, dn0=0, dn1=None):
+        if (ascan_mat is None):
+            ascan_mat = self.a_scan_mat
+
         (num_wave, wave_len) = self.a_scan_mat.shape
         # wave_len = dn1 - dn0
 

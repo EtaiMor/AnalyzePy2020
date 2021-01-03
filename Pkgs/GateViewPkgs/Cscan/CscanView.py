@@ -28,7 +28,6 @@ class CscanView(Dock):
         self.addWidget(self.image_view)
         self.main_view.dock_area.addDock(self, position='right')
         cscan_docview.slots.append(self.cscanChangedEvent)
-        # self.cscan_docview.slots.append(self.cscanChangedEvent)
 
     def cscanChangedEvent(self, cscan):
         self.image_view.imageItem.setImage(cscan)
