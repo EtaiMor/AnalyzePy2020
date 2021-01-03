@@ -3,7 +3,7 @@ from pyqtgraph.parametertree import types as pTypes
 
 from HdfDoc import HdfDoc
 from Pkgs.GateViewPkgs.Ascan.AscanDocView import AscanDocView
-from CscanDocView import CscanDocView
+from Pkgs.GateViewPkgs.Cscan.CscanDocView import CscanDocView
 
 
 class GateDocView(pTypes.GroupParameter):
@@ -16,11 +16,8 @@ class GateDocView(pTypes.GroupParameter):
     def __init__(self, name, hdf_doc : HdfDoc, **opts):
         super().__init__(name=name)
         self.hdf_doc = hdf_doc
-        self.ascan_docview : AscanDocView = None
-        self.cscan_docview: CscanDocView = None
+
         (num_wave, num_row, num_col, wave_len) = hdf_doc.get_data_dim()
-        # self.sigTreeStateChanged.connect(self.param_changed)
-        # self.sigValueChanged.connect(self.value_changed)
         self.AddChildWithSlot({'name': GateDocView.I_POS_STR, 'type': 'int', 'value': np.round(num_row/2), 'siPrefix': True,
                             'suffix': 'pix', 'readonly': False}, self.row_value_changed)
         self.AddChildWithSlot({'name': GateDocView.J_POS_STR, 'type': 'int', 'value': np.round(num_col/2), 'siPrefix': True,
@@ -29,6 +26,10 @@ class GateDocView(pTypes.GroupParameter):
                             'suffix': 'sample', 'readonly': False}, self.tmin_value_changed)
         self.AddChildWithSlot({'name': GateDocView.T_MAX_STR, 'type': 'int', 'value': wave_len - 1, 'siPrefix': True,
                             'suffix': 'sample', 'readonly': False}, self.tmax_value_changed)
+
+        self.ij_change_event_slots = list()
+        self.t_range_event_slots = list()
+
 
     def find_child(self, child_name):
         ret_child = None
@@ -55,44 +56,46 @@ class GateDocView(pTypes.GroupParameter):
         child = self.addChild(dict)
         child.sigValueChanged.connect(slot)
 
-    def open_ascan(self):
-        i_pos = int(self.getValues()[GateDocView.I_POS_STR][0])
-        j_pos = int(self.getValues()[GateDocView.J_POS_STR][0])
-        a_scan = self.hdf_doc.get_a_scan(i_pos, j_pos)
-        self.ascan_docview = AscanDocView(self, 'A-Scan', self.hdf_doc, a_scan)
-        return self.ascan_docview
-
-    def open_cscan(self):
-        t_min = int(self.getValues()[GateDocView.T_MIN_STR][0])
-        t_max = int(self.getValues()[GateDocView.T_MAX_STR][0])
-        c_scan = self.hdf_doc.get_c_scan(dn0=t_min, dn1=t_max)
-        self.cscan_docview = CscanDocView(self, 'C-Scan', self.hdf_doc, c_scan)
-        return self.cscan_docview
 
     def update_ij_pos(self, i_indx, j_indx):
         ipos_param: pTypes.Parameter = self.get_ipos_param()
-        ipos_param.setValue(i_indx, self.row_value_changed)
+        ipos_param.setValue(i_indx)
         jpos_param: pTypes.Parameter = self.get_jpos_param()
         jpos_param.setValue(j_indx)
-        # self.ascan_docview.update_ascan(i_indx, j_indx)
+        for fun in self.ij_change_event_slots:
+            fun(i_indx, j_indx)
+
+
 
     def row_value_changed(self, changeDesc, row):
-        print(changeDesc)
-        print(row)
         jpos_param: pTypes.Parameter = self.get_jpos_param()
-        self.ascan_docview.update_ascan(row, jpos_param.value())
+        col = jpos_param.value()
+        for fun in self.ij_change_event_slots:
+            fun(row, col)
 
     def col_value_changed(self, changeDesc, col):
-        print(changeDesc)
-        print(col)
-        ipos_param: pTypes.Parameter = self.get_ipos_param()
-        self.ascan_docview.update_ascan(ipos_param.value(), col)
+        jpos_param: pTypes.Parameter = self.get_ipos_param()
+        row = jpos_param.value()
+        for fun in self.ij_change_event_slots:
+            fun(row, col)
 
-    def tmin_value_changed(self, changeDesc, data):
-        print(changeDesc)
-        print(data)
+    def update_time_range(self, time_range):
+        tmin_param: pTypes.Parameter = self.get_tmin_param()
+        tmin_param.setValue(time_range[0])
+        tmax_param: pTypes.Parameter = self.get_tmax_param()
+        tmax_param.setValue(time_range[1])
 
-    def tmax_value_changed(self, changeDesc, data):
-        print(changeDesc)
-        print(data)
+        for fun in self.t_range_event_slots:
+            fun(time_range)
 
+    def tmin_value_changed(self, changeDesc, tmin):
+        tmax_param: pTypes.Parameter = self.get_tmax_param()
+        tmax = tmax_param.value()
+        for fun in self.t_range_event_slots:
+            fun((tmin, tmax))
+
+    def tmax_value_changed(self, changeDesc, tmax):
+        tmin_param: pTypes.Parameter = self.get_tmin_param()
+        tmin = tmin_param.value()
+        for fun in self.t_range_event_slots:
+            fun((tmin, tmax))

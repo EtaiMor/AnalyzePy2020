@@ -1,7 +1,6 @@
 from pyqtgraph.dockarea import Dock
 from GateDocView import GateDocView
 # from Pkgs.Ascan.AscanView import AScanView
-from CscanView import CScanView
 import os
 import importlib
 
@@ -33,85 +32,6 @@ class GateView(Dock):
             klass = getattr(module, class_name)
             self.child_views.append(klass.init_instance(self, self.gate_docview))
 
-    def open_cscanview(self):
-        cscan_docview = self.gate_docview.open_cscan()
-        self.cscan_view = CScanView(self, cscan_docview)
-        file_view = self.parent
-        main_view = file_view.parent
-        main_view.dock_area.addDock(self.cscan_view, position='right', relativeTo=main_view.tree_dock)
-
-    #     self.gate_docview.
-    #     file_name = self.data_view.parent().name()
-    #     c_scan = DatasetArr.find_child_in_dataview(self.data_view, DatasetArr.CSCAN_STR)
-    #     name = c_scan.name() + ' - ' + self.data_view.name() + ' - ' + file_name
-    #     self.cscan_dock = Dock(name, closable=True)
-    #     self.parent.dock_area.addDock(self.cscan_dock, 'right')
-    #     image_item = CScanItem(c_scan.opts['image'], self.data_view)
-    #     image_view = pg.ImageView(self.cscan_dock, imageItem = image_item)
-    #     # self.parent.addDockWidget(Qt.RightDockWidgetArea, self.cscan_dock)
-    #     self.cscan_dock.addWidget(image_view)
-    #
-    # def open_bscan(self):
-    #     file_name = self.data_view.parent().name()
-    #     b_scan = DatasetArr.find_child_in_dataview(self.data_view, DatasetArr.BSCAN_STR)
-    #     name = b_scan.name() + ' - ' + self.data_view.name() + ' - ' + file_name
-    #     self.bscan_dock = Dock(name, closable=True)
-    #     self.parent.dock_area.addDock(self.bscan_dock, 'bottom', relativeTo=self.cscan_dock)
-    #
-    #     image_view = pg.ImageView(self.bscan_dock)
-    #     image_view.setImage(b_scan.opts['image'], axes={'t': 0, 'x': 0+1, 'y': 1+1, 'c': None})
-    #     # self.bscan_dock.setWidget(image_view)
-    #     # self.parent.addDockWidget(Qt.BottomDockWidgetArea, self.bscan_dock)
-    #     self.bscan_dock.addWidget(image_view)
-    #
-    #     i_pos = DatasetArr.find_child_in_dataview(self.data_view, DatasetArr.I_POS_STR)
-    #     image_view.setCurrentIndex(int(i_pos.value()))
-    #     image_view.sigTimeChanged.connect(self.bscan_row_changed)
-
-    def open_ascanview(self):
-        ascan_docview = self.gate_docview.open_ascan()
-        self.ascan_view = AScanView(self, ascan_docview)
-        file_view = self.parent
-        main_view = file_view.parent
-        main_view.dock_area.addDock(self.ascan_view, position='bottom', relativeTo=self.cscan_view)
-
-        # self.dock_area.addDock(self.ascan_view, 'right')
-
-        # name = ascan_docview.name()
-
-        # a_scan = DatasetArr.find_child_in_dataview(self.data_view, DatasetArr.ASCAN_STR)
-        # name = a_scan.name() + ' - ' + self.data_view.name() + ' - ' + file_name
-        # self.ascan_dock = Dock(name, closable=True)
-        # self.parent.dock_area.addDock(self.ascan_dock, 'right', relativeTo=self.bscan_dock)
-
-
-        # signal_view = pg.PlotWidget(self.ascan_dock)
-        # signal_view.plot(a_scan.opts['signal'])
-        # signal_view.plotItem.vb.disableAutoRange()
-        # export_action = PyQt5.QtGui.QAction('Export Signal to text')
-        # signal_view.sceneObj.contextMenu.append(export_action)
-        # export_action.triggered.connect(self.export_to_text)
-        # # signal_view.sceneObj.contextMenu.remove(signal_view.sceneObj.contextMenu[0])
-        # self.ascan_dock.addWidget(signal_view)
-        #
-        # t_min = DatasetArr.find_child_in_dataview(self.data_view, DatasetArr.T_MIN_STR)
-        # t_max = DatasetArr.find_child_in_dataview(self.data_view, DatasetArr.T_MAX_STR)
-        # self.time_region = pg.LinearRegionItem(values=[t_min.value(), t_max.value()])
-        # signal_view.addItem(self.time_region)
-        # self.time_region.sigRegionChangeFinished.connect(self.time_region_changed_finished)
-        #
-        # fwf = DatasetArr.find_child_in_dataview(self.data_view, DatasetArr.FWF_STR)
-        # left = fwf.opts['fwf_left']
-        # bottom = fwf.opts['fwf_bottom']
-        # width = fwf.opts['fwf_width']
-        # height = fwf.opts['fwf_height']
-        # self.fwf_roi = pg.RectROI([left, bottom], [width, height], True)
-        # self.fwf_roi.sigRegionChangeFinished.connect(self.fwf_region_changed_finished)
-        # signal_view.addItem(self.fwf_roi)
-        # if (fwf.value()):
-        #     self.fwf_roi.show()
-        # else:
-        #     self.fwf_roi.hide()
 
 
     # def export_to_text(self):

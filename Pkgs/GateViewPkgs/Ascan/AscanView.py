@@ -15,7 +15,7 @@ class AscanView(Dock):
         view = AscanView(parent_view, ascan_docview)
         return view
 
-    def __init__(self, parent_view, ascan_docview):
+    def __init__(self, parent_view, ascan_docview: AscanDocView):
         super().__init__(ascan_docview.name(), closable=True)
         self.ascan_docview = ascan_docview
         self.gate_docview: GateDocView = ascan_docview.gate_docview
@@ -26,13 +26,15 @@ class AscanView(Dock):
         self.signal_view = pg.PlotWidget(self)
         self.signal_view.plot(ascan_docview.a_scan)
         self.addWidget(self.signal_view)
-        ascan_docview.attach_ascanUpdatedEvent(self.ascanChangedEvent)
+
         t_min = self.gate_docview.get_tmin_param().value()
         t_max = self.gate_docview.get_tmax_param().value()
         self.time_region = pg.LinearRegionItem(values=[t_min, t_max])
         self.signal_view.addItem(self.time_region)
         self.time_region.sigRegionChangeFinished.connect(self.time_region_changed_finished)
         main_view.dock_area.addDock(self)
+
+        ascan_docview.slots.append(self.ascanChangedEvent)
 
     def ascanChangedEvent(self, ascan):
         self.signal_view.plotItem.dataItems[0].setData(ascan)
