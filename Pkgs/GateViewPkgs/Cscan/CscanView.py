@@ -18,6 +18,7 @@ class CscanView(Dock):
     def __init__(self, parent, cscan_docview: CscanDocView):
         super().__init__(cscan_docview.name(), closable=True)
         self.cscan_docview = cscan_docview
+        self.gate_docview: GateDocView = cscan_docview.gate_docview
         self.gate_view = parent
         self.file_view = self.gate_view.parent
         self.main_view :MainView = self.file_view.parent

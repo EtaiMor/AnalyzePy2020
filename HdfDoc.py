@@ -108,17 +108,21 @@ class HdfDoc:
 
         return val
 
+    def get_n0_n1(self, indx, dn0, dn1, max_len):
+        cur_n0 = self.fwf_arr[indx] + dn0
+        cur_n1 = self.fwf_arr[indx] + dn1
+        cur_n0 = int(min(cur_n0, max_len))
+        cur_n0 = int(max(cur_n0, 0))
+        cur_n1 = int(min(cur_n1, max_len))
+        cur_n1 = int(max(cur_n1, 0))
+        return cur_n0, cur_n1
+
     def get_c_scan(self, val_type=DispType.PEAK_TO_PEAK, dn0=0, dn1=None):
         (num_wave, wave_len) = self.a_scan_mat.shape
         c_scan = np.zeros_like(self.wave_indx_mat, dtype='float64')
         for indx, i_indx in enumerate(self.i_arr):
             j_indx = self.j_arr[indx]
-            cur_n0 = self.fwf_arr[indx] + dn0
-            cur_n1 = self.fwf_arr[indx] + dn1
-            cur_n0 = int(min(cur_n0, wave_len))
-            cur_n0 = int(max(cur_n0, 0))
-            cur_n1 = int(min(cur_n1, wave_len))
-            cur_n1 = int(max(cur_n1, 0))
+            cur_n0, cur_n1 = self.get_n0_n1(indx, dn0, dn1, wave_len)
             if (cur_n1 > cur_n0):
                 a_scan = self.a_scan_mat[indx][cur_n0:cur_n1]
                 c_scan[i_indx, j_indx] = HdfDoc.get_disp_val(a_scan, val_type)
@@ -133,6 +137,26 @@ class HdfDoc:
         (num_wave, wave_len) = self.a_scan_mat.shape
         return (num_wave, self.num_row, self.num_col, wave_len)
 
+    def get_b_scan(self, row, col = None, dn0=0, dn1=None):
+        if (row is not None and col is not None) or (row is None and col is None):
+            raise ValueError
+
+        (num_wave, num_row, num_col, max_len) = self.get_data_dim()
+        bscan_len = np.abs(dn1 - dn0) + 1
+        if (row >= 0):
+            b_scan = np.zeros((num_col, bscan_len))
+            for cur_col in range(num_col):
+                index = self.wave_indx_mat[row, cur_col]
+                cur_n0, cur_n1 = self.get_n0_n1(index, dn0, dn1, max_len)
+                b_scan[cur_col, 0:cur_n1-cur_n0] = self.a_scan_mat[index, cur_n0:cur_n1]
+        elif (col >= 0):
+            b_scan = np.zeros((num_row, bscan_len))
+            for cur_row in range(num_row):
+                index = self.wave_indx_mat[cur_row, col]
+                cur_n0, cur_n1 = self.get_n0_n1(index, dn0, dn1, max_len)
+                b_scan[cur_row, 0:cur_n1-cur_n0] = self.a_scan_mat[index, cur_n0:cur_n1]
+
+        return b_scan
 
     def get_volume_ascans(self, ascan_mat = None, dn0=0, dn1=None):
         if (ascan_mat is None):
