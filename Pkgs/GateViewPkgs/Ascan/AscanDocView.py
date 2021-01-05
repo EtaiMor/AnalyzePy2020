@@ -4,7 +4,7 @@ from HdfDoc import HdfDoc
 from GateDocView import GateDocView
 from Event import Event
 
-class AscanDocView(pTypes.Parameter):
+class AscanDocView(pTypes.GroupParameter):
     def __init__(self, gate_docview, name, hdf_doc: HdfDoc, a_scan, **opts):
         super().__init__(name=name)
         self.hdf_doc = hdf_doc
@@ -13,6 +13,10 @@ class AscanDocView(pTypes.Parameter):
         self.gate_docview: GateDocView = gate_docview
         self.gate_docview.ij_change_event += self.on_update_ij_pos
         self.ascan_changed_event = Event()
+        self.add_to_parent()
+
+    def add_to_parent(self):
+        self.gate_docview.addChild(self)
 
     def set_ascan(self, a_scan):
         self.a_scan = a_scan

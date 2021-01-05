@@ -32,8 +32,12 @@ class BscanView(Dock):
         self.main_view.dock_area.addDock(self, position='right')
         bscan_docview.bscan_changed_event += self.set_image_item
 
-    def set_image_item(self, bscan):
-        self.image_view.imageItem.setImage(bscan.T)
+    def set_image_item(self, b_scan):
+        if (self.bscan_docview.is_row):
+            self.image_view.imageItem.setImage(b_scan.T)
+        else:
+            self.image_view.imageItem.setImage(b_scan)
+
 
     def mouseClickEvent(self, event):
         col_indx = int(event.pos().x())

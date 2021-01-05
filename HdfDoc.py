@@ -143,13 +143,13 @@ class HdfDoc:
 
         (num_wave, num_row, num_col, max_len) = self.get_data_dim()
         bscan_len = np.abs(dn1 - dn0) + 1
-        if (row >= 0):
+        if (row is not None):
             b_scan = np.zeros((num_col, bscan_len))
             for cur_col in range(num_col):
                 index = self.wave_indx_mat[row, cur_col]
                 cur_n0, cur_n1 = self.get_n0_n1(index, dn0, dn1, max_len)
                 b_scan[cur_col, 0:cur_n1-cur_n0] = self.a_scan_mat[index, cur_n0:cur_n1]
-        elif (col >= 0):
+        elif (col is not None):
             b_scan = np.zeros((num_row, bscan_len))
             for cur_row in range(num_row):
                 index = self.wave_indx_mat[cur_row, col]
