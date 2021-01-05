@@ -1,6 +1,8 @@
 import numpy as np
 from pyqtgraph.parametertree import types as pTypes
 from HdfDoc import HdfDoc
+from Event import Event
+
 
 class GateDocView(pTypes.GroupParameter):
     I_POS_STR = 'Row'
@@ -23,9 +25,8 @@ class GateDocView(pTypes.GroupParameter):
         self.AddChildWithSlot({'name': GateDocView.T_MAX_STR, 'type': 'int', 'value': wave_len - 1, 'siPrefix': True,
                             'suffix': 'sample', 'readonly': False}, self.set_tmax_value)
 
-        self.ij_change_event_slots = list()
-        self.t_range_event_slots = list()
-
+        self.ij_change_event = Event()
+        self.t_range_event = Event()
 
     def find_child(self, child_name):
         ret_child = None
@@ -52,10 +53,6 @@ class GateDocView(pTypes.GroupParameter):
         child = self.addChild(dict)
         child.sigValueChanged.connect(slot)
 
-    def fire_ij_change_event(self, i_indx, j_indx):
-        for fun in self.ij_change_event_slots:
-            fun(i_indx, j_indx)
-
     def update_ij_pos(self, i_indx = None, j_indx=None):
         ipos_param: pTypes.Parameter = self.get_ipos_param()
         if i_indx is not None:
@@ -65,28 +62,24 @@ class GateDocView(pTypes.GroupParameter):
         if j_indx is not None:
             jpos_param.setValue(j_indx)
 
-        self.fire_ij_change_event(ipos_param.value(), jpos_param.value())
+        self.ij_change_event(ipos_param.value(), jpos_param.value())
 
     def set_row_value(self, changeDesc, row):
         jpos_param: pTypes.Parameter = self.get_jpos_param()
         col = jpos_param.value()
-        self.fire_ij_change_event(row, col)
+        self.ij_change_event(row, col)
 
     def set_col_value(self, changeDesc, col):
         ipos_param: pTypes.Parameter = self.get_ipos_param()
         row = ipos_param.value()
-        self.fire_ij_change_event(row, col)
-
-    def fire_t_range_change_event(self, tmin, tmax):
-        for fun in self.t_range_event_slots:
-            fun(tmin, tmax)
+        self.ij_change_event(row, col)
 
     def set_tmin_value(self, changeDesc, tmin):
         tmax_param: pTypes.Parameter = self.get_tmax_param()
         tmax = tmax_param.value()
-        self.fire_t_range_change_event(tmin, tmax)
+        self.t_range_event(tmin, tmax)
 
     def set_tmax_value(self, changeDesc, tmax):
         tmin_param: pTypes.Parameter = self.get_tmin_param()
         tmin = tmin_param.value()
-        self.fire_t_range_change_event(tmin, tmax)
+        self.t_range_event(tmin, tmax)

@@ -2,7 +2,7 @@ from pyqtgraph.parametertree import Parameter, ParameterTree, ParameterItem, reg
 from pyqtgraph.parametertree import types as pTypes
 from HdfDoc import HdfDoc
 from GateDocView import GateDocView
-
+from Event import Event
 
 # from GateDocView import GateDocView
 
@@ -13,17 +13,13 @@ class BscanDocView(pTypes.Parameter):
         self.b_scan = b_scan
         self.is_row = is_row
         self.gate_docview: GateDocView = gate_docview
-        self.gate_docview.ij_change_event_slots.append(self.on_update_ij_pos)
-        self.gate_docview.t_range_event_slots.append(self.on_update_time_range)
-        self.bscan_changed_event_slots = list()
-
-    def fire_bscan_changed_event(self, b_scan):
-        for fun in self.bscan_changed_event_slots:
-            fun(b_scan)
+        self.gate_docview.ij_change_event += self.on_update_ij_pos
+        self.gate_docview.t_range_event += self.on_update_time_range
+        self.bscan_changed_event = Event()
 
     def set_bscan(self, b_scan):
         self.b_scan = b_scan
-        self.fire_bscan_changed_event(self.b_scan)
+        self.bscan_changed_event(self.b_scan)
 
     def on_update_ij_pos(self, i_indx, j_indx):
         t_min = self.gate_docview.get_tmin_param().value()

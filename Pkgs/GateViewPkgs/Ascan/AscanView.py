@@ -3,7 +3,7 @@ from pyqtgraph.dockarea import Dock
 from Pkgs.GateViewPkgs.Ascan.AscanDocView import AscanDocView
 from GateDocView import GateDocView
 from MainView import MainView
-
+from Event import Event
 
 class AscanView(Dock):
     @staticmethod
@@ -32,8 +32,9 @@ class AscanView(Dock):
         self.time_region = pg.LinearRegionItem(values=[t_min, t_max])
         self.signal_view.addItem(self.time_region)
         self.time_region.sigRegionChangeFinished.connect(self.time_region_changed_finished)
+
         main_view.dock_area.addDock(self)
-        ascan_docview.ascan_changed_event_slots.append(self.set_ascan)
+        ascan_docview.ascan_changed_event += self.set_ascan
 
     def set_ascan(self, ascan):
         self.signal_view.plotItem.dataItems[0].setData(ascan)

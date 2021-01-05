@@ -30,7 +30,7 @@ class BscanView(Dock):
         self.image_view = pg.ImageView(self, bscan_docview.name(), imageItem=image_item)
         self.addWidget(self.image_view)
         self.main_view.dock_area.addDock(self, position='right')
-        bscan_docview.bscan_changed_event_slots.append(self.set_image_item)
+        bscan_docview.bscan_changed_event += self.set_image_item
 
     def set_image_item(self, bscan):
         self.image_view.imageItem.setImage(bscan.T)

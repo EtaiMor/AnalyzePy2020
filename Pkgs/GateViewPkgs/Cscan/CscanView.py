@@ -28,7 +28,7 @@ class CscanView(Dock):
         self.image_view = pg.ImageView(self, cscan_docview.name(), imageItem=image_item)
         self.addWidget(self.image_view)
         self.main_view.dock_area.addDock(self, position='right')
-        cscan_docview.cscan_changed_event_slots.append(self.set_image_item)
+        cscan_docview.cscan_changed_event += self.set_image_item
 
     def set_image_item(self, cscan):
         self.image_view.imageItem.setImage(cscan)
