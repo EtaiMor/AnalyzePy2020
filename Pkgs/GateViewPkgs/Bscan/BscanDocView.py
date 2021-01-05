@@ -15,19 +15,24 @@ class BscanDocView(pTypes.Parameter):
         self.gate_docview: GateDocView = gate_docview
         self.gate_docview.ij_change_event_slots.append(self.on_update_ij_pos)
         self.gate_docview.t_range_event_slots.append(self.on_update_time_range)
-        self.slots = list()
+        self.bscan_changed_event_slots = list()
+
+    def fire_bscan_changed_event(self, b_scan):
+        for fun in self.bscan_changed_event_slots:
+            fun(b_scan)
+
+    def set_bscan(self, b_scan):
+        self.b_scan = b_scan
+        self.fire_bscan_changed_event(self.b_scan)
 
     def on_update_ij_pos(self, i_indx, j_indx):
-        tmin = self.gate_docview.get_tmin_param().value()
-        tmax = self.gate_docview.get_tmax_param().value()
-        self.b_scan = self.hdf_doc.get_b_scan(i_indx, None, dn0=tmin, dn1=tmax)
-        self.update_all_slots()
+        t_min = self.gate_docview.get_tmin_param().value()
+        t_max = self.gate_docview.get_tmax_param().value()
+        b_scan = self.hdf_doc.get_b_scan(i_indx, None, dn0=t_min, dn1=t_max)
+        self.set_bscan(b_scan)
 
-    def on_update_time_range(self, time_range):
+    def on_update_time_range(self, t_min, t_max):
         row = self.gate_docview.get_ipos_param().value()
-        self.b_scan = self.hdf_doc.get_b_scan(row, None, dn0=time_range[0], dn1=time_range[1])
-        self.update_all_slots()
+        b_scan = self.hdf_doc.get_b_scan(row, None, dn0=t_min, dn1=t_max)
+        self.set_bscan(b_scan)
 
-    def update_all_slots(self):
-        for fun in self.slots:
-            fun(self.b_scan)

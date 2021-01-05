@@ -1,10 +1,6 @@
 import numpy as np
 from pyqtgraph.parametertree import types as pTypes
-
 from HdfDoc import HdfDoc
-from Pkgs.GateViewPkgs.Ascan.AscanDocView import AscanDocView
-from Pkgs.GateViewPkgs.Cscan.CscanDocView import CscanDocView
-
 
 class GateDocView(pTypes.GroupParameter):
     I_POS_STR = 'Row'
@@ -19,13 +15,13 @@ class GateDocView(pTypes.GroupParameter):
 
         (num_wave, num_row, num_col, wave_len) = hdf_doc.get_data_dim()
         self.AddChildWithSlot({'name': GateDocView.I_POS_STR, 'type': 'int', 'value': np.round(num_row/2), 'siPrefix': True,
-                            'suffix': 'pix', 'readonly': False}, self.row_value_changed)
+                            'suffix': 'pix', 'readonly': False}, self.set_row_value)
         self.AddChildWithSlot({'name': GateDocView.J_POS_STR, 'type': 'int', 'value': np.round(num_col/2), 'siPrefix': True,
-                            'suffix': 'pix', 'readonly': False}, self.col_value_changed)
+                            'suffix': 'pix', 'readonly': False}, self.set_col_value)
         self.AddChildWithSlot({'name': GateDocView.T_MIN_STR, 'type': 'int', 'value': 0, 'siPrefix': True,
-                            'suffix': 'sample', 'readonly': False}, self.tmin_value_changed)
+                            'suffix': 'sample', 'readonly': False}, self.set_tmin_value)
         self.AddChildWithSlot({'name': GateDocView.T_MAX_STR, 'type': 'int', 'value': wave_len - 1, 'siPrefix': True,
-                            'suffix': 'sample', 'readonly': False}, self.tmax_value_changed)
+                            'suffix': 'sample', 'readonly': False}, self.set_tmax_value)
 
         self.ij_change_event_slots = list()
         self.t_range_event_slots = list()
@@ -56,6 +52,9 @@ class GateDocView(pTypes.GroupParameter):
         child = self.addChild(dict)
         child.sigValueChanged.connect(slot)
 
+    def fire_ij_change_event(self, i_indx, j_indx):
+        for fun in self.ij_change_event_slots:
+            fun(i_indx, j_indx)
 
     def update_ij_pos(self, i_indx = None, j_indx=None):
         ipos_param: pTypes.Parameter = self.get_ipos_param()
@@ -66,40 +65,28 @@ class GateDocView(pTypes.GroupParameter):
         if j_indx is not None:
             jpos_param.setValue(j_indx)
 
-        for fun in self.ij_change_event_slots:
-            fun(ipos_param.value(), jpos_param.value())
+        self.fire_ij_change_event(ipos_param.value(), jpos_param.value())
 
-
-
-    def row_value_changed(self, changeDesc, row):
+    def set_row_value(self, changeDesc, row):
         jpos_param: pTypes.Parameter = self.get_jpos_param()
         col = jpos_param.value()
-        for fun in self.ij_change_event_slots:
-            fun(row, col)
+        self.fire_ij_change_event(row, col)
 
-    def col_value_changed(self, changeDesc, col):
+    def set_col_value(self, changeDesc, col):
         ipos_param: pTypes.Parameter = self.get_ipos_param()
         row = ipos_param.value()
-        for fun in self.ij_change_event_slots:
-            fun(row, col)
+        self.fire_ij_change_event(row, col)
 
-    def update_time_range(self, time_range):
-        tmin_param: pTypes.Parameter = self.get_tmin_param()
-        tmin_param.setValue(time_range[0])
-        tmax_param: pTypes.Parameter = self.get_tmax_param()
-        tmax_param.setValue(time_range[1])
-
+    def fire_t_range_change_event(self, tmin, tmax):
         for fun in self.t_range_event_slots:
-            fun(time_range)
+            fun(tmin, tmax)
 
-    def tmin_value_changed(self, changeDesc, tmin):
+    def set_tmin_value(self, changeDesc, tmin):
         tmax_param: pTypes.Parameter = self.get_tmax_param()
         tmax = tmax_param.value()
-        for fun in self.t_range_event_slots:
-            fun((tmin, tmax))
+        self.fire_t_range_change_event(tmin, tmax)
 
-    def tmax_value_changed(self, changeDesc, tmax):
+    def set_tmax_value(self, changeDesc, tmax):
         tmin_param: pTypes.Parameter = self.get_tmin_param()
         tmin = tmin_param.value()
-        for fun in self.t_range_event_slots:
-            fun((tmin, tmax))
+        self.fire_t_range_change_event(tmin, tmax)

@@ -33,10 +33,9 @@ class AscanView(Dock):
         self.signal_view.addItem(self.time_region)
         self.time_region.sigRegionChangeFinished.connect(self.time_region_changed_finished)
         main_view.dock_area.addDock(self)
+        ascan_docview.ascan_changed_event_slots.append(self.set_ascan)
 
-        ascan_docview.slots.append(self.ascanChangedEvent)
-
-    def ascanChangedEvent(self, ascan):
+    def set_ascan(self, ascan):
         self.signal_view.plotItem.dataItems[0].setData(ascan)
 
     def time_region_changed_finished(self, event):

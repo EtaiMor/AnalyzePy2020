@@ -10,13 +10,17 @@ class AscanDocView(pTypes.Parameter):
         self.a_scan = a_scan
         self.signal_ascanUpdatedEvent = None
         self.gate_docview = gate_docview
-        self.gate_docview.ij_change_event_slots.append(self.update_ascan)
-        self.slots = list()
+        self.gate_docview.ij_change_event_slots.append(self.on_update_ij_pos)
+        self.ascan_changed_event_slots = list()
 
-    def update_ascan(self, i_indx, j_indx):
-        self.a_scan = self.hdf_doc.get_a_scan(i_indx, j_indx)
-        self.update_all_slots()
+    def set_ascan(self, a_scan):
+        self.a_scan = a_scan
+        self.fire_ascan_changed_event(self.a_scan)
 
-    def update_all_slots(self):
-        for fun in self.slots:
-            fun(self.a_scan)
+    def fire_ascan_changed_event(self, a_scan):
+            for fun in self.ascan_changed_event_slots:
+                fun(a_scan)
+
+    def on_update_ij_pos(self, i_indx, j_indx):
+        a_scan = self.hdf_doc.get_a_scan(i_indx, j_indx)
+        self.set_ascan(a_scan)
