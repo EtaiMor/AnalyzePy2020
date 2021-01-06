@@ -1,3 +1,4 @@
+import numpy as np
 from pyqtgraph.parametertree import Parameter, ParameterTree, ParameterItem, registerParameterType
 from pyqtgraph.parametertree import types as pTypes
 from HdfDoc import HdfDoc
@@ -13,7 +14,9 @@ class AscanDocView(pTypes.GroupParameter):
         self.gate_docview: GateDocView = gate_docview
         self.gate_docview.ij_change_event += self.on_update_ij_pos
         self.ascan_changed_event = Event()
+
         self.add_to_parent()
+        self.fwf_roi = self.get_fwfroi_default_location()
 
     def add_to_parent(self):
         self.gate_docview.addChild(self)
@@ -25,3 +28,19 @@ class AscanDocView(pTypes.GroupParameter):
     def on_update_ij_pos(self, i_indx, j_indx):
         a_scan = self.hdf_doc.get_a_scan(i_indx, j_indx)
         self.set_ascan(a_scan)
+
+    def get_fwfroi_default_location(self):
+        signal_len = len(self.a_scan)
+        left = signal_len / 10
+        top = 0.5 * np.max(self.a_scan)
+        bottom = 0.5 * np.min(self.a_scan)
+        width = left
+        height = top - bottom
+        return {'left': left, 'bottom': bottom, 'width': width, 'height': height}
+
+    def set_fwf_roi(self, left, bottom, width, height):
+        self.fwf_roi = {'left': left, 'bottom': bottom, 'width': width, 'height': height}
+        self.gate_docview.set_fwf_arr(left, bottom, width, height)
+
+    def get_fwf_roi(self):
+        return self.fwf_roi

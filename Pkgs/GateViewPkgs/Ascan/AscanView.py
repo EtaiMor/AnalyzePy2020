@@ -1,3 +1,4 @@
+import numpy as np
 import pyqtgraph as pg
 from pyqtgraph.dockarea import Dock
 from Pkgs.GateViewPkgs.Ascan.AscanDocView import AscanDocView
@@ -33,8 +34,15 @@ class AscanView(Dock):
         self.signal_view.addItem(self.time_region)
         self.time_region.sigRegionChangeFinished.connect(self.time_region_changed_finished)
 
+        fwf_roi = self.ascan_docview.get_fwf_roi()
+        self.fwf_roi = pg.RectROI([fwf_roi['left'], fwf_roi['bottom']],
+                                  [fwf_roi['width'], fwf_roi['height']], True)
+        self.fwf_roi.sigRegionChangeFinished.connect(self.fwf_region_changed_finished)
+        self.signal_view.addItem(self.fwf_roi)
+
         main_view.dock_area.addDock(self)
         ascan_docview.ascan_changed_event += self.set_ascan
+
 
     def set_ascan(self, ascan):
         self.signal_view.plotItem.dataItems[0].setData(ascan)
@@ -43,3 +51,8 @@ class AscanView(Dock):
         t_min_val, t_max_val = event.getRegion()
         self.gate_docview.get_tmin_param().setValue(t_min_val)
         self.gate_docview.get_tmax_param().setValue(t_max_val)
+
+    def fwf_region_changed_finished(self, event):
+        left, bottom = self.fwf_roi.pos()
+        width, height = self.fwf_roi.size()
+        self.ascan_docview.set_fwf_roi(left, bottom, width, height)

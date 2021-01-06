@@ -9,10 +9,10 @@ from MyImageItem import MyImageItem
 class BscanView(Dock):
     @staticmethod
     def init_instance(parent_view, gate_docview: GateDocView):
-        tmin = int(gate_docview.getValues()[GateDocView.T_MIN_STR][0])
-        tmax = int(gate_docview.getValues()[GateDocView.T_MAX_STR][0])
         (num_wave, num_row, num_col, wave_len) = gate_docview.hdf_doc.get_data_dim()
-        b_scan = gate_docview.hdf_doc.get_b_scan(int(num_row/2), None, dn0=tmin, dn1=tmax)
+        dn0, dn1 = gate_docview.get_dn_min_max()
+        fwf_arr = gate_docview.get_fwf_arr()
+        b_scan = gate_docview.hdf_doc.get_b_scan(int(num_row/2), None, dn0=dn0, dn1=dn1, fwf_arr = fwf_arr)
         bscan_docview = BscanDocView(gate_docview, 'B-Scan', gate_docview.hdf_doc, b_scan, True)
         view = BscanView(parent_view, bscan_docview)
         return view

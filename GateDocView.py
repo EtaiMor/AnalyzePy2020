@@ -4,7 +4,25 @@ from HdfDoc import HdfDoc
 from Event import Event
 
 
-class GateDocView(pTypes.GroupParameter):
+class MyGroupParameter(pTypes.GroupParameter):
+    def __init__(self, name):
+        super().__init__(name=name)
+
+    def find_child(self, child_name):
+        ret_child = None
+        for child in self.childs:
+            if (child.name() == child_name):
+                ret_child = child
+                break
+
+        return ret_child
+
+    def get_value_by_name(self, name):
+        return self.find_child(name).value()
+
+
+
+class GateDocView(MyGroupParameter):
     I_POS_STR = 'Row'
     J_POS_STR = 'Col'
     T_MIN_STR = 'Low Cursor'
@@ -25,29 +43,56 @@ class GateDocView(pTypes.GroupParameter):
         self.AddChildWithSlot({'name': GateDocView.T_MAX_STR, 'type': 'int', 'value': wave_len - 1, 'siPrefix': True,
                             'suffix': 'sample', 'readonly': False}, self.set_tmax_value)
 
+        self.fwf_arr = None
         self.ij_change_event = Event()
         self.t_range_event = Event()
+        self.fwf_changed_event = Event()
 
-    def find_child(self, child_name):
-        ret_child = None
-        for child in self.childs:
-            if (child.name() == child_name):
-                ret_child = child
-                break
+    def set_fwf_arr(self, fwf_left, fwf_bottom, fwf_width, fwf_height):
+        cur_i = self.get_ipos_param().value()
+        cur_j = self.get_jpos_param().value()
+        self.fwf_arr = self.hdf_doc.get_fwf(fwf_left, fwf_bottom, fwf_width, fwf_height, cur_i, cur_j)
+        self.fwf_changed_event()
 
-        return ret_child
+    def get_fwf_arr(self):
+        return self.fwf_arr
+
+    def get_cur_fwf_pos(self):
+        if (self.fwf_arr is not None):
+            cur_i = self.get_ipos_param().value()
+            cur_j = self.get_jpos_param().value()
+            index = self.hdf_doc.wave_indx_mat[cur_i, cur_j]
+            return self.fwf_arr[index]
+        else:
+            return 0
+
+    def get_dn_min_max(self):
+        (_, _, _, wave_len) = self.hdf_doc.get_data_dim()
+
+        t_min = self.get_tmin_param().value()
+        t_max = self.get_tmax_param().value()
+        cur_fwf_pos = self.get_cur_fwf_pos()
+
+        dn0 = int(max(t_min - cur_fwf_pos, 0))
+        dn1 = int(min(t_max - cur_fwf_pos, wave_len-1))
+
+        return dn0, dn1
 
     def get_ipos_param(self):
-        return self.find_child(GateDocView.I_POS_STR)
+        ret: pTypes.Parameter = self.find_child(GateDocView.I_POS_STR)
+        return ret
 
     def get_jpos_param(self):
-        return self.find_child(GateDocView.J_POS_STR)
+        ret: pTypes.Parameter = self.find_child(GateDocView.J_POS_STR)
+        return ret
 
     def get_tmin_param(self):
-        return self.find_child(GateDocView.T_MIN_STR)
+        ret: pTypes.Parameter = self.find_child(GateDocView.T_MIN_STR)
+        return ret
 
     def get_tmax_param(self):
-        return self.find_child(GateDocView.T_MAX_STR)
+        ret: pTypes.Parameter = self.find_child(GateDocView.T_MAX_STR)
+        return ret
 
     def AddChildWithSlot(self, dict, slot):
         child = self.addChild(dict)
@@ -77,9 +122,9 @@ class GateDocView(pTypes.GroupParameter):
     def set_tmin_value(self, changeDesc, tmin):
         tmax_param: pTypes.Parameter = self.get_tmax_param()
         tmax = tmax_param.value()
-        self.t_range_event(tmin, tmax)
+        self.t_range_event()
 
     def set_tmax_value(self, changeDesc, tmax):
         tmin_param: pTypes.Parameter = self.get_tmin_param()
         tmin = tmin_param.value()
-        self.t_range_event(tmin, tmax)
+        self.t_range_event()

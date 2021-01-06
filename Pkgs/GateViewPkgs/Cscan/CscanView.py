@@ -8,9 +8,9 @@ from MyImageItem import MyImageItem
 class CscanView(Dock):
     @staticmethod
     def init_instance(parent_view, gate_docview: GateDocView):
-        t_min = int(gate_docview.getValues()[GateDocView.T_MIN_STR][0])
-        t_max = int(gate_docview.getValues()[GateDocView.T_MAX_STR][0])
-        c_scan = gate_docview.hdf_doc.get_c_scan(dn0=t_min, dn1=t_max)
+        fwf_arr = gate_docview.get_fwf_arr()
+        dn0, dn1 = gate_docview.get_dn_min_max()
+        c_scan = gate_docview.hdf_doc.get_c_scan(dn0=dn0, dn1=dn1, fwf_arr=fwf_arr)
         cscan_docview = CscanDocView(gate_docview, 'C-Scan', gate_docview.hdf_doc, c_scan)
         view = CscanView(parent_view, cscan_docview)
         return view
