@@ -75,6 +75,11 @@ class GateDocView(MyGroupParameter):
 
         dn0 = int(max(t_min - cur_fwf_pos, 0))
         dn1 = int(min(t_max - cur_fwf_pos, wave_len-1))
+        dn0 = int(min(dn0, wave_len-1))
+        dn1 = int(max(dn1, 0))
+
+        dn0 = min(dn0, dn1)
+        dn1 = max(dn0, dn1)
 
         return dn0, dn1
 

@@ -18,6 +18,7 @@ class CscanDocView(pTypes.GroupParameter):
     def add_to_parent(self):
         self.gate_docview.addChild(self)
 
+
     def set_cscan(self):
         dn0, dn1 = self.gate_docview.get_dn_min_max()
         fwf_arr = self.gate_docview.get_fwf_arr()
