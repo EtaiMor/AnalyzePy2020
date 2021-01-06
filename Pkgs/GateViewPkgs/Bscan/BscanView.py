@@ -1,5 +1,7 @@
 import PyQt5.QtCore
 import pyqtgraph as pg
+from PyQt5.QtWidgets import *
+
 from pyqtgraph.dockarea import Dock
 from Pkgs.GateViewPkgs.Bscan.BscanDocView import BscanDocView
 from GateDocView import GateDocView
@@ -8,13 +10,15 @@ from MyImageItem import MyImageItem
 
 
 class BscanView(Dock):
+
+
     @staticmethod
     def init_instance(parent_view, gate_docview: GateDocView):
         (num_wave, num_row, num_col, wave_len) = gate_docview.hdf_doc.get_data_dim()
         dn0, dn1 = gate_docview.get_dn_min_max()
         fwf_arr = gate_docview.get_fwf_arr()
         b_scan = gate_docview.hdf_doc.get_b_scan(int(num_row/2), None, dn0=dn0, dn1=dn1, fwf_arr = fwf_arr)
-        bscan_docview = BscanDocView(gate_docview, 'B-Scan', gate_docview.hdf_doc, b_scan, True)
+        bscan_docview = BscanDocView(gate_docview, 'B-Scan', gate_docview.hdf_doc, b_scan, BscanDocView.HORIZONTAL_TXT)
         view = BscanView(parent_view, bscan_docview)
         return view
 
@@ -35,7 +39,7 @@ class BscanView(Dock):
         bscan_docview.bscan_changed_event += self.set_image_item
 
     def set_image_item(self, b_scan):
-        if (self.bscan_docview.is_row):
+        if (self.bscan_docview.orientation == BscanDocView.HORIZONTAL_TXT):
             self.image_view.imageItem.setImage(b_scan.T)
         else:
             self.image_view.imageItem.setImage(b_scan)
@@ -48,9 +52,20 @@ class BscanView(Dock):
         gate_docview.update_ij_pos(None, col_indx)
 
     def set_popup_menu(self):
-        export_action = PyQt5.QtGui.QAction('check')
-        self.image_view.scene.contextMenu.append(export_action)
-        export_action.triggered.connect(self.check)
+        b_scan_type_menu = QMenu(BscanDocView.ORIENTATION_STR, self)
+        group = QActionGroup(b_scan_type_menu)
+        for text in BscanDocView.ORIENTATION_LIST:
+            action = QAction(text, b_scan_type_menu, checkable=True, checked= text == BscanDocView.HORIZONTAL_TXT)
+            b_scan_type_menu.addAction(action)
+            group.addAction(action)
+        group.setExclusive(True)
+        group.triggered.connect(self.on_bscan_type_triggered)
+        self.image_view.scene.contextMenu.append(b_scan_type_menu)
+
+    def on_bscan_type_triggered(self, action):
+        # if (action.text() == BscanDocView.bscan_types_list[0]):
+        #     print(BscanDocView.bscan_types_list[0])
+        self.bscan_docview.set_orientation(action.text())
 
     def check(self):
         print('check')
