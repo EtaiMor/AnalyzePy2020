@@ -44,3 +44,8 @@ class AscanDocView(pTypes.GroupParameter):
 
     def get_fwf_roi(self):
         return self.fwf_roi
+
+    def save_ascan_to_txt_file(self, file_name):
+        t_min = self.gate_docview.get_tmin_param().value()
+        t_max = self.gate_docview.get_tmax_param().value()
+        np.savetxt(file_name, self.a_scan[t_min:t_max])

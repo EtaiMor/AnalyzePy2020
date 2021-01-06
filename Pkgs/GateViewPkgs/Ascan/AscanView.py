@@ -1,10 +1,14 @@
-import numpy as np
+import os
+import PyQt5.QtCore
+from PyQt5.QtCore import QSettings
+from PyQt5.QtWidgets import QFileDialog
+
 import pyqtgraph as pg
 from pyqtgraph.dockarea import Dock
 from Pkgs.GateViewPkgs.Ascan.AscanDocView import AscanDocView
 from GateDocView import GateDocView
 from MainView import MainView
-from Event import Event
+
 
 class AscanView(Dock):
     @staticmethod
@@ -40,6 +44,10 @@ class AscanView(Dock):
         self.fwf_roi.sigRegionChangeFinished.connect(self.fwf_region_changed_finished)
         self.signal_view.addItem(self.fwf_roi)
 
+        export_action = PyQt5.QtGui.QAction('Export Signal to text')
+        self.signal_view.sceneObj.contextMenu.append(export_action)
+        export_action.triggered.connect(self.export_to_text)
+
         main_view.dock_area.addDock(self)
         ascan_docview.ascan_changed_event += self.set_ascan
 
@@ -56,3 +64,11 @@ class AscanView(Dock):
         left, bottom = self.fwf_roi.pos()
         width, height = self.fwf_roi.size()
         self.ascan_docview.set_fwf_roi(left, bottom, width, height)
+
+    def export_to_text(self):
+        my_settings = QSettings()
+        last_open_file = my_settings.value('LAST_OPEN_FILE')
+        last_open_dir = os.path.dirname(os.path.abspath(last_open_file))
+        file_name, _ = QFileDialog.getSaveFileName(self, "Save to Text File", last_open_dir, "(*.sig)")
+        my_settings.setValue('LAST_OPEN_FILE', file_name)
+        self.ascan_docview.save_ascan_to_txt_file(file_name)
