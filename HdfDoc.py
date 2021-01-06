@@ -56,7 +56,7 @@ class HdfDoc:
             for indx, i_indx in enumerate(self.i_arr):
                 j_indx = self.j_arr[indx]
                 self.wave_indx_mat[i_indx, j_indx] = indx
-            self.fwf_arr = np.zeros_like(self.phi_arr)
+
 
     def get_s_pos_arr(self):
             raise NotImplementedError
@@ -108,9 +108,14 @@ class HdfDoc:
 
         return val
 
-    def get_n0_n1(self, indx, dn0, dn1, max_len):
-        cur_n0 = self.fwf_arr[indx] + dn0
-        cur_n1 = self.fwf_arr[indx] + dn1
+    def get_n0_n1(self, indx, dn0, dn1, max_len, fwf_arr = None):
+        if (fwf_arr is not None):
+            fwf_pos = fwf_arr[indx]
+        else:
+            fwf_pos = 0.0
+
+        cur_n0 = fwf_pos + dn0
+        cur_n1 = fwf_pos + dn1
         cur_n0 = int(min(cur_n0, max_len))
         cur_n0 = int(max(cur_n0, 0))
         cur_n1 = int(min(cur_n1, max_len))
@@ -158,7 +163,7 @@ class HdfDoc:
 
         return b_scan
 
-    def get_volume_ascans(self, ascan_mat = None, dn0=0, dn1=None):
+    def get_volume_ascans(self, ascan_mat = None, dn0=0, dn1=None, fwf_arr = None):
         if (ascan_mat is None):
             ascan_mat = self.a_scan_mat
 
@@ -169,10 +174,14 @@ class HdfDoc:
 
 
         max_n = 0
+        fwf_pos = 0.0
         for indx, i_indx in enumerate(self.i_arr):
+            if (fwf_arr is not None):
+                fwf_pos = fwf_arr[indx]
+
             j_indx = self.j_arr[indx]
-            cur_n0 = self.fwf_arr[indx] + dn0
-            cur_n1 = self.fwf_arr[indx] + dn1
+            cur_n0 = fwf_pos + dn0
+            cur_n1 = fwf_pos + dn1
             cur_n0 = int(min(cur_n0, wave_len))
             cur_n0 = int(max(cur_n0, 0))
             cur_n1 = int(min(cur_n1, wave_len))
@@ -217,33 +226,33 @@ class HdfDoc:
 
         return max_pos, fwf_left_upd
 
-    def update_fwf(self, fwf_left, fwf_bottom, fwf_width, fwf_height, cur_i, cur_j, is_reset):
-        if (is_reset):
-            self.fwf_arr = np.zeros_like(self.phi_arr)
-        else:
-            fwf_left_upd = fwf_left
-            for row in range(cur_i, 0, -1):
-                signal_indx = self.wave_indx_mat[row, cur_j]
-                max_pos, fwf_left_upd = self.update_fwf_roi(signal_indx, fwf_left_upd, fwf_bottom, fwf_width, fwf_height)
-                self.fwf_arr[signal_indx] = max_pos
+    # def update_fwf(self, fwf_left, fwf_bottom, fwf_width, fwf_height, cur_i, cur_j, is_reset):
+    #     if (is_reset):
+    #         self.fwf_arr = np.zeros_like(self.phi_arr)
+    #     else:
+    #         fwf_left_upd = fwf_left
+    #         for row in range(cur_i, 0, -1):
+    #             signal_indx = self.wave_indx_mat[row, cur_j]
+    #             max_pos, fwf_left_upd = self.update_fwf_roi(signal_indx, fwf_left_upd, fwf_bottom, fwf_width, fwf_height)
+    #             self.fwf_arr[signal_indx] = max_pos
+    #
+    #
+    #         for col in range(cur_j, 0, -1):
+    #             signal_indx = self.wave_indx_mat[0, col]
+    #             max_pos, fwf_left_upd = self.update_fwf_roi(signal_indx, fwf_left_upd, fwf_bottom, fwf_width, fwf_height)
+    #             self.fwf_arr[signal_indx] = max_pos
+    #
+    #         for row in range(self.num_row):
+    #             for col in range(self.num_col):
+    #                 if ((row % 2) > 0):
+    #                     col = int(self.num_col - col - 1)
+    #                 signal_indx = self.wave_indx_mat[row, col]
+    #                 max_pos, fwf_left_upd = self.update_fwf_roi(signal_indx, fwf_left_upd, fwf_bottom, fwf_width, fwf_height)
+    #                 self.fwf_arr[signal_indx] = max_pos
 
-
-            for col in range(cur_j, 0, -1):
-                signal_indx = self.wave_indx_mat[0, col]
-                max_pos, fwf_left_upd = self.update_fwf_roi(signal_indx, fwf_left_upd, fwf_bottom, fwf_width, fwf_height)
-                self.fwf_arr[signal_indx] = max_pos
-
-            for row in range(self.num_row):
-                for col in range(self.num_col):
-                    if ((row % 2) > 0):
-                        col = int(self.num_col - col - 1)
-                    signal_indx = self.wave_indx_mat[row, col]
-                    max_pos, fwf_left_upd = self.update_fwf_roi(signal_indx, fwf_left_upd, fwf_bottom, fwf_width, fwf_height)
-                    self.fwf_arr[signal_indx] = max_pos
-
-    def get_fwf_pos(self, row, col):
-        signal_indx = self.wave_indx_mat[row, col]
-        return self.fwf_arr[signal_indx]
+    # def get_fwf_pos(self, row, col):
+    #     signal_indx = self.wave_indx_mat[row, col]
+    #     return self.fwf_arr[signal_indx]
 
 
     def band_pass_filter(self, low_freq, high_freq, order):
