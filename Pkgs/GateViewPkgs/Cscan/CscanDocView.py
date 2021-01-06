@@ -13,7 +13,7 @@ class CscanDocView(pTypes.GroupParameter):
         self.gate_docview.t_range_event += self.on_update_time_range
         self.gate_docview.fwf_changed_event += self.on_update_fwf
         self.cscan_changed_event = Event()
-        self.add_to_parent()
+        # self.add_to_parent()
 
     def add_to_parent(self):
         self.gate_docview.addChild(self)

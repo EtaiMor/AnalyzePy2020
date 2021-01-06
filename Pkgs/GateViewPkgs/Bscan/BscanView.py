@@ -1,3 +1,4 @@
+import PyQt5.QtCore
 import pyqtgraph as pg
 from pyqtgraph.dockarea import Dock
 from Pkgs.GateViewPkgs.Bscan.BscanDocView import BscanDocView
@@ -29,6 +30,7 @@ class BscanView(Dock):
         image_item.attach_mouseClickEvent(self.mouseClickEvent)
         self.image_view = pg.ImageView(self, bscan_docview.name(), imageItem=image_item)
         self.addWidget(self.image_view)
+        self.set_popup_menu()
         self.main_view.dock_area.addDock(self, position='right')
         bscan_docview.bscan_changed_event += self.set_image_item
 
@@ -44,3 +46,11 @@ class BscanView(Dock):
         t_indx = int(event.pos().y())
         gate_docview: GateDocView = self.bscan_docview.gate_docview
         gate_docview.update_ij_pos(None, col_indx)
+
+    def set_popup_menu(self):
+        export_action = PyQt5.QtGui.QAction('check')
+        self.image_view.scene.contextMenu.append(export_action)
+        export_action.triggered.connect(self.check)
+
+    def check(self):
+        print('check')
