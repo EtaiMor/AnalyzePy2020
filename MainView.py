@@ -1,5 +1,5 @@
 from PyQt5.QtCore import QSettings
-from PyQt5.QtWidgets import QMainWindow, QFileDialog, QMessageBox, QDockWidget
+from PyQt5.QtWidgets import QMainWindow, QFileDialog, QMessageBox, QDockWidget, QProgressBar
 from pyqtgraph.parametertree import ParameterTree
 from pyqtgraph.dockarea import *
 
@@ -38,12 +38,19 @@ class MainView(QMainWindow):
         open_action.triggered.connect(self.menu_open_filename)
         close_action = file_menu.addAction("Close")
         close_action.triggered.connect(self.menu_close_filename)
-        self.setDockNestingEnabled(True)
 
+        self.progressBar = QProgressBar()
+        self.progressBar.setGeometry(30, 40, 200, 25)
+        self.statusBar().addPermanentWidget(self.progressBar)
+
+
+        self.setDockNestingEnabled(True)
         self.tree_dock = Dock('Tree Dock',self.dock_area, autoOrientation=False, hideTitle=True)
         self.tree_dock.addWidget(self.tree_parameters_widget)
         self.dock_area.addDock(self.tree_dock, 'left')
 
+
+        self.main_docview.load_file_progress_event += self.on_load_file_progress
         self.showMaximized()
         self.file_view_arr = list()
 
@@ -74,3 +81,9 @@ class MainView(QMainWindow):
 
     def menu_close_filename(self):
         print('Close file')
+
+    def on_load_file_progress(self, perc):
+        self.progressBar.show()
+        self.progressBar.setValue(perc)
+        if (perc >= 100):
+            self.progressBar.hide()

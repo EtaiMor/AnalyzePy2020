@@ -4,6 +4,8 @@ import h5py
 from enum import Enum
 import matplotlib.pyplot as plt
 from scipy.signal import butter, lfilter
+from Event import Event
+
 
 class DispType(Enum):
     PEAK_TO_PEAK = 1
@@ -15,27 +17,42 @@ class DispType(Enum):
     ENVELOP_TIME_PEAK = 7
 
 
-
-
 class HdfDoc:
-    def __init__(self, hdf_file_name):
+    def __init__(self, hdf_file_name, on_progress_fun=None, percent_to_progress=100):
         self.a_scan_mat = None
         self.hdf_filename = hdf_file_name
-        self.load_ascans_from_file()
+        self.progressEvent = Event()
+        if on_progress_fun is not None:
+            self.progressEvent += on_progress_fun
+        self.load_file(percent_to_progress)
 
-    def load_ascans_from_file(self):
+    def _load_ascans_with_event(self, file: h5py.File, percent_to_progress):
+        a_scans_dataset = file['A-Scans']
+        num_wave, wave_len = a_scans_dataset.shape
+        step = int(num_wave * percent_to_progress / 100)
+        self.a_scan_mat = np.zeros(a_scans_dataset.shape)
+
+        for index in range(0, num_wave, step):
+            end_index = min(index + step, num_wave)
+            self.a_scan_mat[index:end_index, :] = np.float64(a_scans_dataset[index:end_index, :])
+            self.progressEvent(index * 100 / num_wave)
+
+        if a_scans_dataset.dtype is np.dtype('uint8'):
+            self.a_scan_mat /= np.power(2., 8)
+        elif a_scans_dataset.dtype is np.dtype('uint16'):
+            self.a_scan_mat /= np.power(2., 16)
+        else:
+            raise NotImplementedError
+        self.progressEvent(100)
+
+    def load_file(self, percetToProgress):
         with h5py.File(self.hdf_filename, 'r') as file:
             self.phi_arr = file['Phi Array'][:]
             self.radius_arr = file['Radius Array'][:]
             self.z_arr = file['Z Array'][:]
-            a_scans_dataset = file['A-Scans'][:, :]
-            self.a_scan_mat = np.float64(a_scans_dataset)
-            if a_scans_dataset.dtype is np.dtype('uint8'):
-                self.a_scan_mat /= np.power(2., 8)
-            elif a_scans_dataset.dtype is np.dtype('uint16'):
-                self.a_scan_mat /= np.power(2., 16)
-            else:
-                raise NotImplementedError
+            # a_scans_dataset = file['A-Scans'][:, :]
+            # self.a_scan_mat = np.float64(a_scans_dataset)
+            self._load_ascans_with_event(file, 10)
 
             self.a_scan_mat = self.a_scan_mat - np.mean(self.a_scan_mat, 1, keepdims=True)
             self.sample_rate = file['A-Scans'].attrs['Sample Rate'] / 1e6
@@ -60,9 +77,8 @@ class HdfDoc:
                 j_indx = self.j_arr[indx]
                 self.wave_indx_mat[i_indx, j_indx] = indx
 
-
     def get_s_pos_arr(self):
-            raise NotImplementedError
+        raise NotImplementedError
 
     def get_scan_reso(self):
         if self.is_3D:
@@ -121,7 +137,7 @@ class HdfDoc:
         cur_n1 = int(max(cur_n1, 0))
         return cur_n0, cur_n1
 
-    def get_c_scan(self, val_type=DispType.PEAK_TO_PEAK, dn0=0, dn1=None, fwf_arr = None):
+    def get_c_scan(self, val_type=DispType.PEAK_TO_PEAK, dn0=0, dn1=None, fwf_arr=None):
         (num_wave, wave_len) = self.a_scan_mat.shape
         c_scan = np.zeros_like(self.wave_indx_mat, dtype='float64')
         fwf_n = 0
@@ -144,7 +160,7 @@ class HdfDoc:
         (num_wave, wave_len) = self.a_scan_mat.shape
         return (num_wave, self.num_row, self.num_col, wave_len)
 
-    def get_b_scan(self, row, col = None, dn0=0, dn1=0, fwf_arr = None):
+    def get_b_scan(self, row, col=None, dn0=0, dn1=0, fwf_arr=None):
         if (row is not None and col is not None) or (row is None and col is None):
             raise ValueError
 
@@ -159,7 +175,7 @@ class HdfDoc:
                     fwf_n = fwf_arr[index]
 
                 cur_n0, cur_n1 = self.get_n0_n1(dn0, dn1, fwf_n)
-                b_scan[cur_col, 0:cur_n1-cur_n0] = self.a_scan_mat[index, cur_n0:cur_n1]
+                b_scan[cur_col, 0:cur_n1 - cur_n0] = self.a_scan_mat[index, cur_n0:cur_n1]
         elif (col is not None):
             b_scan = np.zeros((num_row, bscan_len))
             for cur_row in range(num_row):
@@ -167,11 +183,11 @@ class HdfDoc:
                 if fwf_arr is not None:
                     fwf_n = fwf_arr[index]
                 cur_n0, cur_n1 = self.get_n0_n1(dn0, dn1, fwf_n)
-                b_scan[cur_row, 0:cur_n1-cur_n0] = self.a_scan_mat[index, cur_n0:cur_n1]
+                b_scan[cur_row, 0:cur_n1 - cur_n0] = self.a_scan_mat[index, cur_n0:cur_n1]
 
         return b_scan
 
-    def get_volume_ascans(self, ascan_mat = None, dn0=0, dn1=None, fwf_arr = None):
+    def get_volume_ascans(self, ascan_mat=None, dn0=0, dn1=None, fwf_arr=None):
         if (ascan_mat is None):
             ascan_mat = self.a_scan_mat
 
@@ -179,7 +195,6 @@ class HdfDoc:
         # wave_len = dn1 - dn0
 
         ascan_vol = np.zeros((self.num_row, self.num_col, wave_len))
-
 
         max_n = 0
         fwf_pos = 0.0
@@ -200,7 +215,6 @@ class HdfDoc:
                 ascan_vol[i_indx, j_indx, 0:cur_n1 - cur_n0] = ascan_mat[indx, cur_n0:cur_n1]
         ascan_vol = ascan_vol[:, :, 0:max_n]
         return ascan_vol
-
 
     def update_fwf_roi(self, signal_indx, fwf_left, fwf_bottom, fwf_width, fwf_height):
         signal = self.a_scan_mat[signal_indx, :]
@@ -231,7 +245,6 @@ class HdfDoc:
         else:
             fwf_left_upd = fwf_left
 
-
         return max_pos, fwf_left_upd
 
     def get_fwf(self, fwf_left, fwf_bottom, fwf_width, fwf_height, cur_i, cur_j):
@@ -241,7 +254,6 @@ class HdfDoc:
             signal_indx = self.wave_indx_mat[row, cur_j]
             max_pos, fwf_left_upd = self.update_fwf_roi(signal_indx, fwf_left_upd, fwf_bottom, fwf_width, fwf_height)
             fwf_arr[signal_indx] = max_pos
-
 
         for col in range(cur_j, 0, -1):
             signal_indx = self.wave_indx_mat[0, col]
@@ -253,21 +265,32 @@ class HdfDoc:
                 if ((row % 2) > 0):
                     col = int(self.num_col - col - 1)
                 signal_indx = self.wave_indx_mat[row, col]
-                max_pos, fwf_left_upd = self.update_fwf_roi(signal_indx, fwf_left_upd, fwf_bottom, fwf_width, fwf_height)
+                max_pos, fwf_left_upd = self.update_fwf_roi(signal_indx, fwf_left_upd, fwf_bottom, fwf_width,
+                                                            fwf_height)
                 fwf_arr[signal_indx] = max_pos
         return fwf_arr
+
     # def get_fwf_pos(self, row, col):
     #     signal_indx = self.wave_indx_mat[row, col]
     #     return self.fwf_arr[signal_indx]
 
-
     def band_pass_filter(self, low_freq, high_freq, order):
-        nyq = 0.5 * self.sample_rate *1e6
+        nyq = 0.5 * self.sample_rate * 1e6
         low = low_freq / nyq
         high = high_freq / nyq
         b, a = butter(order, [low, high], btype='band')
         self.a_scan_mat = lfilter(b, a, self.a_scan_mat, 1)
-        print('Im here')
+
+    def get_pos_str(self, row, col):
+        index = self.wave_indx_mat[row, col]
+
+        if (self.is_3D):
+            raise NotImplementedError
+        else:
+            pos = {'is_3d': False, 'x': self.x_arr[index], 'y': self.y_arr[index]}
+
+        return pos
+
 
 if __name__ == '__main__':
     # file_name = 'D:/US_Scans/adhessive_scans/Sample1-  5MHz Focus N01 Glue Interface.hdf'
@@ -278,4 +301,3 @@ if __name__ == '__main__':
     plt.figure('a-scan')
     plt.plot(cur_a_scan)
     plt.show()
-

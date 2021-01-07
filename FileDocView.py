@@ -7,7 +7,7 @@ class FileDocView(pTypes.GroupParameter):
     def __init__(self, file_name, hdf_doc : HdfDoc, **opts):
         super().__init__(name=file_name)
         self.hdf_doc = hdf_doc
-        print('init')
+
 
     def open_gate(self):
         num_gates = len(self.childs)

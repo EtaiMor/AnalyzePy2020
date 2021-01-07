@@ -31,3 +31,10 @@ class CscanDocView(pTypes.GroupParameter):
     def on_update_fwf(self):
         self.set_cscan()
 
+    def get_pos_string(self, col, row):
+        pos = self.hdf_doc.get_pos_str(col, row)
+        pos_str = '(x = %0.1f [mm], col = %0.1f = [mm]' % (pos['x'], pos['y'])
+        # pos_str = "<span style='font-size: 12pt'>x=%0.1f [mm],   <span style='color: red'>y=%0.1f [mm] </span>" \
+        #            % (pos['x'], pos['y'])
+        return pos_str
+
