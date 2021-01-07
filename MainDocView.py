@@ -3,11 +3,12 @@ from pyqtgraph.parametertree import types as pTypes
 
 from HdfDoc import HdfDoc
 from FileDocView import FileDocView
+from Event import Event
 
 class MainDocView(pTypes.GroupParameter):
     def __init__(self):
         super().__init__(name='MainDocView')
-        print('init')
+        self.load_file_progress_event = Event()
 
     def find_file_docview(self, file_name):
         for file_docview in self.childs:
@@ -21,9 +22,13 @@ class MainDocView(pTypes.GroupParameter):
         if (file_docview is not None):
             return (file_docview, False)
         else:
-            hdf_doc = HdfDoc(file_name)
+            hdf_doc = HdfDoc(file_name, self.on_load_progress)
+
             file_docview = FileDocView(file_name, hdf_doc)
             file_docview.setParent(self)
             self.addChild(file_docview)
 
             return (file_docview, True)
+
+    def on_load_progress(self, perc):
+        print(perc)

@@ -11,7 +11,3 @@ class MyImageItem(pg.ImageItem):
 
     def mouseClickEvent(self, event):
         self.signal_mouseClickEvent(event)
-
-
-        print(pos_str)
-
