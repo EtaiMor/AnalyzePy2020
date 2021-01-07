@@ -8,7 +8,7 @@ from Event import Event
 class MainDocView(pTypes.GroupParameter):
     def __init__(self):
         super().__init__(name='MainDocView')
-        self.load_file_progress_event = Event()
+        self.progress_event = Event()
 
     def find_file_docview(self, file_name):
         for file_docview in self.childs:
@@ -22,7 +22,7 @@ class MainDocView(pTypes.GroupParameter):
         if (file_docview is not None):
             return (file_docview, False)
         else:
-            hdf_doc = HdfDoc(file_name, self.on_load_progress)
+            hdf_doc = HdfDoc(file_name, self.on_progress, 10)
 
             file_docview = FileDocView(file_name, hdf_doc)
             file_docview.setParent(self)
@@ -30,5 +30,5 @@ class MainDocView(pTypes.GroupParameter):
 
             return (file_docview, True)
 
-    def on_load_progress(self, perc):
-        self.load_file_progress_event(perc)
+    def on_progress(self, perc, text):
+        self.progress_event(perc, text)

@@ -50,7 +50,7 @@ class MainView(QMainWindow):
         self.dock_area.addDock(self.tree_dock, 'left')
 
 
-        self.main_docview.load_file_progress_event += self.on_load_file_progress
+        self.main_docview.progress_event += self.on_progress
         self.showMaximized()
         self.file_view_arr = list()
 
@@ -82,7 +82,8 @@ class MainView(QMainWindow):
     def menu_close_filename(self):
         print('Close file')
 
-    def on_load_file_progress(self, perc):
+    def on_progress(self, perc, text):
+        self.statusBar().showMessage(text)
         self.progressBar.show()
         self.progressBar.setValue(perc)
         if (perc >= 100):

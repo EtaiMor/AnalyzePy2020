@@ -24,18 +24,19 @@ class HdfDoc:
         self.progressEvent = Event()
         if on_progress_fun is not None:
             self.progressEvent += on_progress_fun
-        self.load_file(percent_to_progress)
+            self.percent_to_progress = percent_to_progress
+        self.load_file()
 
-    def _load_ascans_with_event(self, file: h5py.File, percent_to_progress):
+    def _load_ascans_with_event(self, file: h5py.File):
         a_scans_dataset = file['A-Scans']
         num_wave, wave_len = a_scans_dataset.shape
-        step = int(num_wave * percent_to_progress / 100)
+        step = int(num_wave * self.percent_to_progress / 100)
         self.a_scan_mat = np.zeros(a_scans_dataset.shape)
 
         for index in range(0, num_wave, step):
             end_index = min(index + step, num_wave)
             self.a_scan_mat[index:end_index, :] = np.float64(a_scans_dataset[index:end_index, :])
-            self.progressEvent(index * 100 / num_wave)
+            self.progressEvent(index * 100 / num_wave, 'loading file...')
 
         if a_scans_dataset.dtype is np.dtype('uint8'):
             self.a_scan_mat /= np.power(2., 8)
@@ -43,16 +44,16 @@ class HdfDoc:
             self.a_scan_mat /= np.power(2., 16)
         else:
             raise NotImplementedError
-        self.progressEvent(100)
+        self.progressEvent(100, '')
 
-    def load_file(self, percetToProgress):
+    def load_file(self):
         with h5py.File(self.hdf_filename, 'r') as file:
             self.phi_arr = file['Phi Array'][:]
             self.radius_arr = file['Radius Array'][:]
             self.z_arr = file['Z Array'][:]
             # a_scans_dataset = file['A-Scans'][:, :]
             # self.a_scan_mat = np.float64(a_scans_dataset)
-            self._load_ascans_with_event(file, 10)
+            self._load_ascans_with_event(file)
 
             self.a_scan_mat = self.a_scan_mat - np.mean(self.a_scan_mat, 1, keepdims=True)
             self.sample_rate = file['A-Scans'].attrs['Sample Rate'] / 1e6
@@ -141,6 +142,7 @@ class HdfDoc:
         (num_wave, wave_len) = self.a_scan_mat.shape
         c_scan = np.zeros_like(self.wave_indx_mat, dtype='float64')
         fwf_n = 0
+        num_to_progress = int(num_wave * self.percent_to_progress / 100)
         for indx, i_indx in enumerate(self.i_arr):
             j_indx = self.j_arr[indx]
             if fwf_arr is not None:
@@ -149,6 +151,11 @@ class HdfDoc:
             if (cur_n1 > cur_n0):
                 a_scan = self.a_scan_mat[indx][cur_n0:cur_n1]
                 c_scan[i_indx, j_indx] = HdfDoc.get_disp_val(a_scan, val_type)
+
+
+            if (indx %  num_to_progress) == 0:
+                self.progressEvent(100 * indx / num_wave, 'calculating c-scan...')
+        self.progressEvent(100, '')
 
         return c_scan
 
@@ -169,6 +176,7 @@ class HdfDoc:
         fwf_n = 0
         if (row is not None):
             b_scan = np.zeros((num_col, bscan_len))
+            num_to_progress = int(num_col * self.percent_to_progress / 100)
             for cur_col in range(num_col):
                 index = self.wave_indx_mat[row, cur_col]
                 if fwf_arr is not None:
@@ -176,15 +184,21 @@ class HdfDoc:
 
                 cur_n0, cur_n1 = self.get_n0_n1(dn0, dn1, fwf_n)
                 b_scan[cur_col, 0:cur_n1 - cur_n0] = self.a_scan_mat[index, cur_n0:cur_n1]
+                if (cur_col % num_to_progress) == 0:
+                    self.progressEvent(100 * cur_col / num_col, 'calculating b-scan...')
         elif (col is not None):
             b_scan = np.zeros((num_row, bscan_len))
+            num_to_progress = int(num_row * self.percent_to_progress / 100)
             for cur_row in range(num_row):
                 index = self.wave_indx_mat[cur_row, col]
                 if fwf_arr is not None:
                     fwf_n = fwf_arr[index]
                 cur_n0, cur_n1 = self.get_n0_n1(dn0, dn1, fwf_n)
                 b_scan[cur_row, 0:cur_n1 - cur_n0] = self.a_scan_mat[index, cur_n0:cur_n1]
+                if (cur_row % num_to_progress) == 0:
+                    self.progressEvent(100 * cur_row / num_row, 'calculating b-scan...')
 
+        self.progressEvent(100, '')
         return b_scan
 
     def get_volume_ascans(self, ascan_mat=None, dn0=0, dn1=None, fwf_arr=None):
@@ -260,6 +274,7 @@ class HdfDoc:
             max_pos, fwf_left_upd = self.update_fwf_roi(signal_indx, fwf_left_upd, fwf_bottom, fwf_width, fwf_height)
             fwf_arr[signal_indx] = max_pos
 
+        num_to_progress = int(self.num_row * self.percent_to_progress / 100)
         for row in range(self.num_row):
             for col in range(self.num_col):
                 if ((row % 2) > 0):
@@ -268,6 +283,11 @@ class HdfDoc:
                 max_pos, fwf_left_upd = self.update_fwf_roi(signal_indx, fwf_left_upd, fwf_bottom, fwf_width,
                                                             fwf_height)
                 fwf_arr[signal_indx] = max_pos
+
+            if (row % num_to_progress) == 0:
+                self.progressEvent(100 * row / self.num_row, 'calculating FWF...')
+
+            self.progressEvent(100, '')
         return fwf_arr
 
     # def get_fwf_pos(self, row, col):
