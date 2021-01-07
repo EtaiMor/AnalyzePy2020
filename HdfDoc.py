@@ -269,6 +269,19 @@ class HdfDoc:
         self.a_scan_mat = lfilter(b, a, self.a_scan_mat, 1)
         print('Im here')
 
+
+    def get_pos_str(self, row, col):
+        index = self.wave_indx_mat[row, col]
+
+        if (self.is_3D):
+            raise NotImplementedError
+        else:
+            pos = {'is_3d':False,'x': self.x_arr[index], 'y':self.y_arr[index]}
+
+
+        return pos
+
+
 if __name__ == '__main__':
     # file_name = 'D:/US_Scans/adhessive_scans/Sample1-  5MHz Focus N01 Glue Interface.hdf'
     file_name = 'G:/My Drive/doctorat/Experiments/Sample1-  5MHz Focus N01 Glue Interface.hdf'
