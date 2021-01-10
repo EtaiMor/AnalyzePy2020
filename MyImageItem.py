@@ -5,6 +5,7 @@ class MyImageItem(pg.ImageItem):
         super().__init__(image, **kargs)
         self.signal_mouseClickEvent = None
 
+
     def attach_mouseClickEvent(self, event_func):
         self.signal_mouseClickEvent = event_func
 
