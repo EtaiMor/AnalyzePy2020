@@ -16,23 +16,20 @@ class CscanView(Dock):
         view = CscanView(parent_view, cscan_docview)
         return view
 
-    def __init__(self, parent, cscan_docview: CscanDocView):
+    def __init__(self, parent_view, cscan_docview: CscanDocView):
         super().__init__(cscan_docview.name(), closable=True)
         self.cscan_docview = cscan_docview
         self.gate_docview: GateDocView = cscan_docview.gate_docview
-        self.gate_view = parent
-        self.file_view = self.gate_view.parent
-        self.main_view :MainView = self.file_view.parent
+        self.parent_view = parent_view
 
         image_item = MyImageItem(cscan_docview.c_scan)
         image_item.attach_mouseClickEvent(self.mouseClickEvent)
 
         self.image_view = pg.ImageView(self, cscan_docview.name(), imageItem=image_item)
         self.image_view.scene.sigMouseMoved.connect(self.mouseMoved)
-
         self.addWidget(self.image_view)
 
-        self.main_view.dock_area.addDock(self, position='right')
+        parent_view.dock_area.addDock(self, position='right')
         cscan_docview.cscan_changed_event += self.set_image_item
 
     def set_image_item(self, cscan):
@@ -55,7 +52,7 @@ class CscanView(Dock):
         else:
             pos_str = ''
 
-        self.main_view.statusBar().showMessage(pos_str)
+        self.parent_view.statusBar().showMessage(pos_str)
         # pos = evt[0]  ## using signal proxy turns original arguments into a tuple
         # if p1.sceneBoundingRect().contains(pos):
         #     mousePoint = vb.mapSceneToView(pos)

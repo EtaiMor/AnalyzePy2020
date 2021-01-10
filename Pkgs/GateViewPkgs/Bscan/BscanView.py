@@ -22,20 +22,17 @@ class BscanView(Dock):
         view = BscanView(parent_view, bscan_docview)
         return view
 
-    def __init__(self, gate_view, bscan_docview: BscanDocView):
+    def __init__(self, parent_view, bscan_docview: BscanDocView):
         super().__init__(bscan_docview.name(), closable=True)
         self.bscan_docview = bscan_docview
         self.gate_docview: GateDocView = bscan_docview.gate_docview
-        self.file_view = gate_view
-        self.file_view = gate_view.parent
-        self.main_view :MainView = self.file_view.parent
 
         image_item = MyImageItem(bscan_docview.b_scan.T)
         image_item.attach_mouseClickEvent(self.mouseClickEvent)
         self.image_view = pg.ImageView(self, bscan_docview.name(), imageItem=image_item)
         self.addWidget(self.image_view)
         self.set_popup_menu()
-        self.main_view.dock_area.addDock(self, position='right')
+        parent_view.dock_area.addDock(self, position='right')
         bscan_docview.bscan_changed_event += self.set_image_item
 
     def set_image_item(self, b_scan):

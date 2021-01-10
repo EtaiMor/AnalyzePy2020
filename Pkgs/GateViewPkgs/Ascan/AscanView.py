@@ -24,9 +24,6 @@ class AscanView(Dock):
         super().__init__(ascan_docview.name(), closable=True)
         self.ascan_docview = ascan_docview
         self.gate_docview: GateDocView = ascan_docview.gate_docview
-        gate_view = parent_view
-        file_view = gate_view.parent
-        main_view:MainView = file_view.parent
 
         self.signal_view = pg.PlotWidget(self)
         self.signal_view.plot(ascan_docview.a_scan)
@@ -48,7 +45,7 @@ class AscanView(Dock):
         self.signal_view.sceneObj.contextMenu.append(export_action)
         export_action.triggered.connect(self.export_to_text)
 
-        main_view.dock_area.addDock(self)
+        parent_view.dock_area.addDock(self)
         ascan_docview.ascan_changed_event += self.set_ascan
 
 
