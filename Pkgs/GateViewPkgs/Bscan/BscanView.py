@@ -32,8 +32,6 @@ class BscanView(Dock):
 
         image_item = MyImageItem(bscan_docview.b_scan.T)
         image_item.attach_mouseClickEvent(self.mouseClickEvent)
-
-
         self.image_view = pg.ImageView(self, bscan_docview.name(), imageItem=image_item)
         self.addWidget(self.image_view)
         self.set_popup_menu()

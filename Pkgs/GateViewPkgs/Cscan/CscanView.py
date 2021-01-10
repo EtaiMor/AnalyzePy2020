@@ -32,13 +32,6 @@ class CscanView(Dock):
 
         self.addWidget(self.image_view)
 
-
-
-        self.pos_label = pg.TextItem(color = (255, 0, 0), anchor=(0, 1))
-        self.image_view.addItem(self.pos_label)
-        self.status_bar = QStatusBar()
-        self.addWidget(self.status_bar)
-
         self.main_view.dock_area.addDock(self, position='right')
         cscan_docview.cscan_changed_event += self.set_image_item
 
@@ -62,7 +55,7 @@ class CscanView(Dock):
         else:
             pos_str = ''
 
-        self.pos_label.setText(pos_str)
+        self.main_view.statusBar().showMessage(pos_str)
         # pos = evt[0]  ## using signal proxy turns original arguments into a tuple
         # if p1.sceneBoundingRect().contains(pos):
         #     mousePoint = vb.mapSceneToView(pos)
