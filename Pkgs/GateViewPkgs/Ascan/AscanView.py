@@ -12,15 +12,15 @@ from MainView import MainView
 
 class AscanView(Dock):
     @staticmethod
-    def init_instance(parent_view, gate_docview: GateDocView):
+    def init_instance(gate_docview: GateDocView):
         i_pos = int(gate_docview.getValues()[GateDocView.I_POS_STR][0])
         j_pos = int(gate_docview.getValues()[GateDocView.J_POS_STR][0])
         a_scan = gate_docview.hdf_doc.get_a_scan(i_pos, j_pos)
         ascan_docview = AscanDocView(gate_docview, 'A-Scan', gate_docview.hdf_doc, a_scan)
-        view = AscanView(parent_view, ascan_docview)
+        view = AscanView(ascan_docview)
         return view
 
-    def __init__(self, parent_view, ascan_docview: AscanDocView):
+    def __init__(self, ascan_docview: AscanDocView):
         super().__init__(ascan_docview.name(), closable=True)
         self.ascan_docview = ascan_docview
         self.gate_docview: GateDocView = ascan_docview.gate_docview
@@ -45,7 +45,7 @@ class AscanView(Dock):
         self.signal_view.sceneObj.contextMenu.append(export_action)
         export_action.triggered.connect(self.export_to_text)
 
-        parent_view.dock_area.addDock(self)
+
         ascan_docview.ascan_changed_event += self.set_ascan
 
 
