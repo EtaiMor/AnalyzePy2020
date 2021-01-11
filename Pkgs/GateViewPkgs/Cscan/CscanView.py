@@ -41,14 +41,17 @@ class CscanView(Dock):
 
     def mouseMoved(self, viewPos):
         image_item : MyImageItem = self.image_view.getImageItem()
-        num_row = image_item.height()
-        num_col = image_item.width()
         scenePos = self.image_view.getImageItem().mapFromScene(viewPos)
         row, col = int(scenePos.y()), int(scenePos.x())
-        if (0 <= row < num_row) and (0 <= col < num_col):
-            pos_str = self.cscan_docview.get_pos_string(row, col)
-        else:
-            pos_str = ''
+        self.cscan_docview.set_mouse_ij_pos(row, col)
+
+        # num_row = image_item.height()
+        # num_col = image_item.width()
+        #
+        # if (0 <= row < num_row) and (0 <= col < num_col):
+        #     pos_str = self.cscan_docview.get_pos_string(row, col)
+        # else:
+        #     pos_str = ''
 
         # self.parent_view.statusBar().showMessage(pos_str)
         # pos = evt[0]  ## using signal proxy turns original arguments into a tuple

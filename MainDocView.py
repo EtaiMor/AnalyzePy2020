@@ -9,6 +9,7 @@ class MainDocView(pTypes.GroupParameter):
     def __init__(self):
         super().__init__(name='MainDocView')
         self.progress_event = Event()
+        self.update_status = Event()
 
     def find_file_docview(self, file_name):
         for file_docview in self.childs:
@@ -32,3 +33,6 @@ class MainDocView(pTypes.GroupParameter):
 
     def on_progress(self, perc, text):
         self.progress_event(perc, text)
+
+    def set_status(self, str):
+        self.update_status(str)

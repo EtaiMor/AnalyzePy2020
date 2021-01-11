@@ -1,6 +1,8 @@
 from pyqtgraph.parametertree import types as pTypes
 from HdfDoc import HdfDoc
 import GateDocView
+from FileDocView import FileDocView
+from MainDocView import MainDocView
 from Event import Event
 
 
@@ -10,9 +12,15 @@ class CscanDocView(pTypes.GroupParameter):
         self.hdf_doc = hdf_doc
         self.c_scan = c_scan
         self.gate_docview: GateDocView.GateDocView = gate_docview
+        self.file_docview: FileDocView = self.gate_docview.parent()
+        self.main_docview: MainDocView = self.file_docview.parent()
+
         self.gate_docview.t_range_event += self.on_update_time_range
         self.gate_docview.fwf_changed_event += self.on_update_fwf
+        self._mouse_row = 0
+        self._mouse_col = 0
         self.cscan_changed_event = Event()
+
         # self.add_to_parent()
 
     def add_to_parent(self):
@@ -31,10 +39,15 @@ class CscanDocView(pTypes.GroupParameter):
     def on_update_fwf(self):
         self.set_cscan()
 
-    def get_pos_string(self, col, row):
-        pos = self.hdf_doc.get_pos_str(col, row)
-        pos_str = '(x = %0.1f [mm], col = %0.1f = [mm]' % (pos['x'], pos['y'])
-        # pos_str = "<span style='font-size: 12pt'>x=%0.1f [mm],   <span style='color: red'>y=%0.1f [mm] </span>" \
-        #            % (pos['x'], pos['y'])
-        return pos_str
+    def set_mouse_ij_pos(self, row, col):
+        num_row, num_col = self.c_scan.shape
+        if (0 <= row < num_row) and (0 <= col < num_col):
+            self._mouse_row = row
+            self._mouse_col = col
+            pos = self.hdf_doc.get_pos(row, col)
+            pos_str = '(x = %0.1f [mm], col = %0.1f = [mm]' % (pos['x'], pos['y'])
+        else:
+            pos_str = ''
+
+        self.main_docview.set_status(pos_str)
 
