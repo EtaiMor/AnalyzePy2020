@@ -33,13 +33,10 @@ class BscanView(Dock):
         self.addWidget(self.image_view)
         self.set_popup_menu()
         bscan_docview.bscan_changed_event += self.set_image_item
+        self.image_view.scene.sigMouseMoved.connect(self.mouseMoved)
 
     def set_image_item(self, b_scan):
-        if (self.bscan_docview.orientation == BscanDocView.HORIZONTAL_TXT):
-            self.image_view.imageItem.setImage(b_scan.T)
-        else:
-            self.image_view.imageItem.setImage(b_scan)
-
+        self.image_view.imageItem.setImage(b_scan)
 
     def mouseClickEvent(self, event):
         col_indx = int(event.pos().x())
@@ -63,5 +60,8 @@ class BscanView(Dock):
         #     print(BscanDocView.bscan_types_list[0])
         self.bscan_docview.set_orientation(action.text())
 
-    def check(self):
-        print('check')
+
+    def mouseMoved(self, viewPos):
+        scenePos = self.image_view.getImageItem().mapFromScene(viewPos)
+        row, col = int(scenePos.y()), int(scenePos.x())
+        self.bscan_docview.set_mouse_ij_pos(row, col)

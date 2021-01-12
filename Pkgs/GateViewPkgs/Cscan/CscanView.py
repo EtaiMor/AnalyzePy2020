@@ -40,7 +40,6 @@ class CscanView(Dock):
         gate_docview.update_ij_pos(i_indx, j_indx)
 
     def mouseMoved(self, viewPos):
-        image_item : MyImageItem = self.image_view.getImageItem()
         scenePos = self.image_view.getImageItem().mapFromScene(viewPos)
         row, col = int(scenePos.y()), int(scenePos.x())
         self.cscan_docview.set_mouse_ij_pos(row, col)

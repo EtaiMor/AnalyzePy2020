@@ -311,6 +311,10 @@ class HdfDoc:
 
         return pos
 
+    def get_time(self, time_index):
+        time_val = time_index / self.sample_rate
+        return time_val
+
 
 if __name__ == '__main__':
     # file_name = 'D:/US_Scans/adhessive_scans/Sample1-  5MHz Focus N01 Glue Interface.hdf'
