@@ -8,19 +8,18 @@ from MyImageItem import MyImageItem
 
 class CscanView(Dock):
     @staticmethod
-    def init_instance(parent_view, gate_docview: GateDocView):
+    def init_instance(gate_docview: GateDocView):
         fwf_arr = gate_docview.get_fwf_arr()
         dn0, dn1 = gate_docview.get_dn_min_max()
         c_scan = gate_docview.hdf_doc.get_c_scan(dn0=dn0, dn1=dn1, fwf_arr=fwf_arr)
         cscan_docview = CscanDocView(gate_docview, 'C-Scan', gate_docview.hdf_doc, c_scan)
-        view = CscanView(parent_view, cscan_docview)
+        view = CscanView(cscan_docview)
         return view
 
-    def __init__(self, parent_view, cscan_docview: CscanDocView):
+    def __init__(self, cscan_docview: CscanDocView):
         super().__init__(cscan_docview.name(), closable=True)
         self.cscan_docview = cscan_docview
         self.gate_docview: GateDocView = cscan_docview.gate_docview
-        self.parent_view = parent_view
 
         image_item = MyImageItem(cscan_docview.c_scan)
         image_item.attach_mouseClickEvent(self.mouseClickEvent)
@@ -29,7 +28,6 @@ class CscanView(Dock):
         self.image_view.scene.sigMouseMoved.connect(self.mouseMoved)
         self.addWidget(self.image_view)
 
-        parent_view.dock_area.addDock(self, position='right')
         cscan_docview.cscan_changed_event += self.set_image_item
 
     def set_image_item(self, cscan):
@@ -42,17 +40,19 @@ class CscanView(Dock):
         gate_docview.update_ij_pos(i_indx, j_indx)
 
     def mouseMoved(self, viewPos):
-        image_item : MyImageItem = self.image_view.getImageItem()
-        num_row = image_item.height()
-        num_col = image_item.width()
         scenePos = self.image_view.getImageItem().mapFromScene(viewPos)
         row, col = int(scenePos.y()), int(scenePos.x())
-        if (0 <= row < num_row) and (0 <= col < num_col):
-            pos_str = self.cscan_docview.get_pos_string(row, col)
-        else:
-            pos_str = ''
+        self.cscan_docview.set_mouse_ij_pos(row, col)
 
-        self.parent_view.statusBar().showMessage(pos_str)
+        # num_row = image_item.height()
+        # num_col = image_item.width()
+        #
+        # if (0 <= row < num_row) and (0 <= col < num_col):
+        #     pos_str = self.cscan_docview.get_pos_string(row, col)
+        # else:
+        #     pos_str = ''
+
+        # self.parent_view.statusBar().showMessage(pos_str)
         # pos = evt[0]  ## using signal proxy turns original arguments into a tuple
         # if p1.sceneBoundingRect().contains(pos):
         #     mousePoint = vb.mapSceneToView(pos)

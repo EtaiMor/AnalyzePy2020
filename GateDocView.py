@@ -3,7 +3,6 @@ from pyqtgraph.parametertree import types as pTypes
 from HdfDoc import HdfDoc
 from Event import Event
 
-
 class MyGroupParameter(pTypes.GroupParameter):
     def __init__(self, name):
         super().__init__(name=name)
@@ -133,3 +132,4 @@ class GateDocView(MyGroupParameter):
         tmin_param: pTypes.Parameter = self.get_tmin_param()
         tmin = tmin_param.value()
         self.t_range_event()
+

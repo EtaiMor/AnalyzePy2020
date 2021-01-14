@@ -15,11 +15,7 @@ class AscanDocView(pTypes.GroupParameter):
         self.gate_docview.ij_change_event += self.on_update_ij_pos
         self.ascan_changed_event = Event()
 
-        # self.add_to_parent()
         self.fwf_roi = self.get_fwfroi_default_location()
-
-    def add_to_parent(self):
-        self.gate_docview.addChild(self)
 
     def set_ascan(self, a_scan):
         self.a_scan = a_scan

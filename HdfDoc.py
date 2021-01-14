@@ -301,7 +301,7 @@ class HdfDoc:
         b, a = butter(order, [low, high], btype='band')
         self.a_scan_mat = lfilter(b, a, self.a_scan_mat, 1)
 
-    def get_pos_str(self, row, col):
+    def get_pos(self, row, col):
         index = self.wave_indx_mat[row, col]
 
         if (self.is_3D):
@@ -310,6 +310,10 @@ class HdfDoc:
             pos = {'is_3d': False, 'x': self.x_arr[index], 'y': self.y_arr[index]}
 
         return pos
+
+    def get_time(self, time_index):
+        time_val = time_index / self.sample_rate
+        return time_val
 
 
 if __name__ == '__main__':

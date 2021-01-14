@@ -54,6 +54,10 @@ class MainView(QMainWindow):
         self.showMaximized()
         self.file_view_arr = list()
 
+        self.main_docview.update_status += self.on_update_status
+
+
+
 
     def on_view_param_update(self):
         print('update')
@@ -88,3 +92,7 @@ class MainView(QMainWindow):
         self.progressBar.setValue(perc)
         if (perc >= 100):
             self.progressBar.hide()
+
+    def on_update_status(self, str):
+        self.statusBar().showMessage(str)
+
