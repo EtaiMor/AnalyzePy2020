@@ -21,6 +21,7 @@ class VscanDocView(pTypes.GroupParameter):
         self._mouse_row = 0
         self._mouse_col = 0
         self.vscan_changed_event = Event()
+        self.set_vscan()
 
     def set_vscan(self):
         dn0, dn1 = self.gate_docview.get_dn_min_max()
