@@ -26,11 +26,11 @@ class GateView(Dock):
             dock_view = klass.init_instance(self.gate_docview)
             if prv_dock is not None:
                 if (num_pkgs % 2 ==0):
-                    main_view.dock_area.addDock(dock_view, position='right', relativeTo=prv_dock)
-                    # main_view.dock_area.addDock(dock_view)
+                    # main_view.dock_area.addDock(dock_view, position='right', relativeTo=prv_dock)
+                    main_view.dock_area.addDock(dock_view)
                 else:
-                    main_view.dock_area.addDock(dock_view, position='bottom', relativeTo=prv_dock)
-                    # main_view.dock_area.addDock(dock_view)
+                    # main_view.dock_area.addDock(dock_view, position='bottom', relativeTo=prv_dock)
+                    main_view.dock_area.addDock(dock_view)
             else:
                 # main_view.dock_area.addDock(dock_view, position='right')
                 main_view.dock_area.addDock(dock_view)

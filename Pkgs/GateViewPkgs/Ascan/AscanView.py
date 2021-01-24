@@ -21,7 +21,7 @@ class AscanView(Dock):
         return view
 
     def __init__(self, ascan_docview: AscanDocView):
-        super().__init__(ascan_docview.name(), closable=True)
+        super().__init__(ascan_docview.name(), closable=True, autoOrientation = False)
         self.ascan_docview = ascan_docview
         self.gate_docview: GateDocView = ascan_docview.gate_docview
 

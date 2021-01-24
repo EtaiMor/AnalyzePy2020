@@ -17,7 +17,7 @@ class CscanView(Dock):
         return view
 
     def __init__(self, cscan_docview: CscanDocView):
-        super().__init__(cscan_docview.name(), closable=True)
+        super().__init__(cscan_docview.name(), closable=True, autoOrientation = False)
         self.cscan_docview = cscan_docview
         self.gate_docview: GateDocView = cscan_docview.gate_docview
 
