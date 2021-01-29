@@ -23,7 +23,7 @@ class BscanView(Dock):
         return view
 
     def __init__(self, bscan_docview: BscanDocView):
-        super().__init__(bscan_docview.name(), closable=True)
+        super().__init__(bscan_docview.name(), closable=True, autoOrientation = False)
         self.bscan_docview = bscan_docview
         self.gate_docview: GateDocView = bscan_docview.gate_docview
 

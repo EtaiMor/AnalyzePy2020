@@ -32,8 +32,8 @@ class GateView(Dock):
                     main_view.dock_area.addDock(dock_view, position='bottom', relativeTo=prv_dock)
                     # main_view.dock_area.addDock(dock_view)
             else:
-                # main_view.dock_area.addDock(dock_view, position='right')
-                main_view.dock_area.addDock(dock_view)
+                main_view.dock_area.addDock(dock_view, position='right')
+                # main_view.dock_area.addDock(dock_view)
             prv_dock = dock_view
             num_pkgs += 1
 
