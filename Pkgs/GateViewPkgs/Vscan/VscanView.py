@@ -16,10 +16,12 @@ from mayavi.core.ui.mayavi_scene import MayaviScene
 from traitsui.api import View, Item
 from tvtk.pyface.scene_editor import SceneEditor
 from mayavi.modules.image_plane_widget import ImagePlaneWidget
+from mayavi.sources.api import ArraySource
+from mayavi.modules.api import IsoSurface, ImagePlaneWidget
 
 class Visualization(HasTraits):
     scene = Instance(MlabSceneModel, ())
-    data = Instance(np.ndarray, ())
+    source = Instance(ArraySource, ())
     x_plane = Instance(ImagePlaneWidget, ())
     y_plane = Instance(ImagePlaneWidget, ())
     view = View(Item('scene', editor=SceneEditor(scene_class=MayaviScene),
@@ -28,16 +30,16 @@ class Visualization(HasTraits):
 
     @on_trait_change('scene.activated')
     def update_plot(self):
-        self.x_plane = self.scene.mlab.volume_slice(self.data, plane_orientation='x_axes')
-        self.y_plane = self.scene.mlab.volume_slice(self.data, plane_orientation='z_axes')
-        print('im here')
+        self.scene.engine.add_source(self.source)
+        self.source.add_module(self.x_plane)
+        self.x_plane.name = 'x cut'
+        self.x_plane.ipw.plane_orientation = 'x_axes'
+        self.source.add_module(self.y_plane)
+        self.y_plane.name = 'y cut'
+        self.y_plane.ipw.plane_orientation = 'y_axes'
 
-    def update(self, new_data):
-        self.data = new_data
-        self.x_plane.mlab_source.scalars = self.data
-        self.y_plane.mlab_source.scalars = self.data
-        print(self.data.shape)
-
+    def update_scalar_data(self, scalar_data):
+        self.source.scalar_data = scalar_data
 
 class MayaviQWidget(QtGui.QWidget):
     def __init__(self, data, parent=None):
@@ -45,8 +47,7 @@ class MayaviQWidget(QtGui.QWidget):
         layout = QtGui.QVBoxLayout(self)
         layout.setContentsMargins(0,0,0,0)
         layout.setSpacing(0)
-        self.visualization = Visualization()
-        self.visualization.data = data
+        self.visualization = Visualization(source = ArraySource(scalar_data = data))
         self.ui = self.visualization.edit_traits(parent=self, kind='subpanel').control
         time.sleep(1)
         self.ui.setParent(self)
@@ -74,9 +75,10 @@ class VscanView(Dock):
         container.show()
         vscan_docview.vscan_changed_event += self.on_vscan_changed
 
-
     def on_vscan_changed(self, v_scan: np.ndarray):
-        self.maya_widget.visualization.update(v_scan)
+        print('on_vscan_changed')
+        # self.maya_widget.visualization.source.scalar_data = v_scan
+        self.maya_widget.visualization.update_scalar_data(v_scan)
 
 
 
