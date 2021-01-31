@@ -3,6 +3,7 @@ from GateDocView import GateDocView
 # from Pkgs.Ascan.AscanView import AScanView
 import os
 import importlib
+import json
 # from MainView import MainView
 
 
@@ -14,8 +15,26 @@ class GateView(Dock):
         main_view = file_view.parent
         self.load_gateview_pkgs(main_view)
 
-
     def load_gateview_pkgs(self, main_view):
+        with open("settings.json") as json_file:
+            params = json.load(json_file)
+
+        pkgs = params['Packages']
+        num_pkgs = 0
+        prv_dock = None
+        for pkg in pkgs:
+            dir = pkg['dir']
+            view_class = pkg['view']
+            pos = pkg['pos']
+            module_name = 'Pkgs.GateViewPkgs.{0}.{1}'.format(dir, view_class)
+            module = importlib.import_module(module_name)
+            klass = getattr(module, view_class)
+            dock_view = klass.init_instance(self.gate_docview)
+            main_view.dock_area.addDock(dock_view, position=pos, relativeTo=prv_dock)
+            prv_dock = dock_view
+            num_pkgs += 1
+
+    def load_gateview_pkgs_old(self, main_view):
         num_pkgs = 0
         prv_dock = None
         for pkg_dir in os.listdir('./Pkgs/GateViewPkgs/'):
