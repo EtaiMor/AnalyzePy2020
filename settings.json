@@ -1,0 +1,8 @@
+{
+    "Packages":
+    [
+        {"dir": "Cscan", "view": "CscanView", "pos": "right"},
+        {"dir": "Bscan", "view": "BscanView", "pos": "bottom"},
+        {"dir": "Ascan", "view": "AscanView", "pos": "right"}
+    ]
+}
